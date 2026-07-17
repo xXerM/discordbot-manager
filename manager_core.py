@@ -51,7 +51,7 @@ def create_bot(name, token):
     if bot_dir.exists():
         return False, f"'{name}' adında bir bot zaten var"
 
-    bot_dir.mkdir(parents=True)
+    bot_dir.mkdir(parents=True, exist_ok=True)
     dest = bot_dir / "bot.py"
     shutil.copy2(TEMPLATE_FILE, dest)
 
@@ -125,6 +125,17 @@ def start_bot(bot_name):
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL
             )
+
+        time.sleep(2)
+        poll = process.poll()
+        if poll is not None:
+            bot_info["status"] = "stopped"
+            bot_info["pid"] = None
+            save_config(config)
+            log_lines = get_bot_logs(bot_name, 5)
+            error_info = log_lines[-1] if log_lines else "Bilinmeyen hata"
+            log(bot_name, f"Bot başlatılamadı, çıkış kodu: {poll}")
+            return False, f"Bot başlatılamadı (çıkış kodu: {poll}). Son log: {error_info}"
 
         bot_info["pid"] = process.pid
         bot_info["status"] = "running"
@@ -226,18 +237,27 @@ def get_bot_status(bot_name):
     status = {"name": bot_name, **info}
 
     if info["status"] == "running" and info["pid"]:
+        alive = False
         try:
             proc = psutil.Process(info["pid"])
-            status["cpu_percent"] = proc.cpu_percent(interval=0.1)
-            status["memory_mb"] = proc.memory_info().rss / 1024 / 1024
-            status["memory_percent"] = proc.memory_percent()
-            status["create_time"] = datetime.fromtimestamp(proc.create_time()).isoformat()
-            status["uptime_seconds"] = time.time() - proc.create_time()
-            status["process_exists"] = True
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            proc.cpu_percent(interval=0.05)
+            if proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE:
+                status["cpu_percent"] = proc.cpu_percent(interval=0.05)
+                status["memory_mb"] = proc.memory_info().rss / 1024 / 1024
+                status["memory_percent"] = proc.memory_percent()
+                status["create_time"] = datetime.fromtimestamp(proc.create_time()).isoformat()
+                status["uptime_seconds"] = time.time() - proc.create_time()
+                status["process_exists"] = True
+                alive = True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+
+        if not alive:
             status["status"] = "stopped"
             status["pid"] = None
             status["process_exists"] = False
+            config["bots"][bot_name]["status"] = "stopped"
+            config["bots"][bot_name]["pid"] = None
             save_config(config)
 
     bot_dir = Path(info["directory"])
@@ -301,28 +321,33 @@ def get_bot_logs(bot_name, lines=50):
 def monitor_loop(interval=5):
     while True:
         time.sleep(interval)
-        config = load_config()
-        for name, info in config["bots"].items():
-            if info["status"] == "running" and info["pid"]:
-                try:
-                    proc = psutil.Process(info["pid"])
-                    if not proc.is_running():
+        try:
+            config = load_config()
+            changed = False
+            for name, info in list(config["bots"].items()):
+                if info["status"] == "running" and info["pid"]:
+                    alive = False
+                    try:
+                        proc = psutil.Process(info["pid"])
+                        proc.cpu_percent()
+                        if proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE:
+                            alive = True
+                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                        pass
+
+                    if not alive:
                         info["status"] = "stopped"
                         info["pid"] = None
+                        changed = True
                         log(name, "Bot beklenmedik şekilde durdu")
                         if info.get("auto_restart"):
                             log(name, "Otomatik yeniden başlatılıyor...")
                             save_config(config)
                             start_bot(name)
-                except psutil.NoSuchProcess:
-                    info["status"] = "stopped"
-                    info["pid"] = None
-                    log(name, "Bot beklenmedik şekilde durdu (process yok)")
-                    if info.get("auto_restart"):
-                        log(name, "Otomatik yeniden başlatılıyor...")
-                        save_config(config)
-                        start_bot(name)
-        save_config(config)
+            if changed:
+                save_config(config)
+        except Exception:
+            pass
 
 
 def import_bot(name, bot_code, token=None, requirements_content=None):
@@ -333,7 +358,7 @@ def import_bot(name, bot_code, token=None, requirements_content=None):
     if bot_dir.exists():
         return False, f"'{name}' adında bir bot zaten var"
 
-    bot_dir.mkdir(parents=True)
+    bot_dir.mkdir(parents=True, exist_ok=True)
     (bot_dir / "bot.py").write_text(bot_code, encoding="utf-8")
 
     if token:
