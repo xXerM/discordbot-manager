@@ -7,16 +7,17 @@ A modern CLI + Web tool for managing Python-based Discord bots.
 - **Bot Creation** — Creates new bots from the `templatebot.py` template
 - **Import Existing Bots** — Upload your own `.py` bot files with drag-and-drop; auto-installs dependencies
 - **Replace Bot Files** — Update any bot's source code by uploading a new file (keeps config & token)
-- **Start / Stop / Restart** — Manage bot processes
+- **Start / Stop / Restart** — Manage bot processes with crash detection
 - **Code Editing** — Edit bot files via CLI or web interface
 - **Token Management** — Update tokens in `.env` files
 - **Dependency Management** — Auto-installs packages from `requirements.txt`
-- **Git Integration** — `git init`, `commit`, and `push` bot directories
-- **Live Monitoring** — Track RAM, CPU, storage, and uptime
-- **Auto-Restart** — Automatically restarts bots on unexpected crashes
+- **Git Push & Pull** — `git init`, `commit`, `push`, and `pull` bot repositories
+- **Live Monitoring** — Track RAM, CPU, storage, and uptime with auto-restart on crash
 - **Logging** — Separate log files for each bot
-- **Web Dashboard** — Modern, mobile-friendly dark theme UI powered by Flask
-- **CLI Interface** — Interactive menu or direct argument commands
+- **Invite Link Generator** — Generate Discord OAuth2 invite URLs from bot tokens
+- **Web Dashboard** — Modern, mobile-friendly dark theme UI with EN/TR language switcher
+- **CLI Interface** — Interactive menu or direct argument commands with EN/TR language support
+- **Language Support** — Both web and CLI support English (default) and Turkish
 
 ## Installation
 
@@ -47,19 +48,17 @@ python3 web_app.py
 python3 manager.py
 ```
 
+Language can be toggled between English and Turkish from the interactive menu.
+
 ### Terminal (Command Line)
 
 ```bash
 # Create a bot
 python3 manager.py create mybot YOUR_DISCORD_TOKEN
 
-# Start a bot
+# Start / Stop / Restart
 python3 manager.py start mybot
-
-# Stop a bot
 python3 manager.py stop mybot
-
-# Restart a bot
 python3 manager.py restart mybot
 
 # Delete a bot
@@ -77,8 +76,9 @@ python3 manager.py logs mybot --lines 50
 # Edit bot file
 python3 manager.py edit mybot
 
-# Git push
+# Git push and pull
 python3 manager.py git-push mybot -m "update"
+python3 manager.py git-pull mybot --remote origin --branch main
 
 # Install dependencies
 python3 manager.py install mybot
@@ -88,13 +88,17 @@ python3 manager.py import mybot /path/to/bot.py --token TOKEN --requirements /pa
 
 # Get Discord invite link for a bot
 python3 manager.py invite mybot
+
+# Set CLI language
+python3 manager.py lang en   # English (default)
+python3 manager.py lang tr   # Turkish
 ```
 
 ## File Structure
 
 ```
 bot-manager-python/
-├── manager.py            # CLI interface (interactive + argument-based)
+├── manager.py            # CLI interface (interactive + argument-based, EN/TR)
 ├── manager_core.py       # Core management logic
 ├── web_app.py            # Flask web application
 ├── templatebot.py        # Bot template
@@ -103,7 +107,7 @@ bot-manager-python/
 ├── bots/                 # Created bot directories
 ├── logs/                 # Bot log files
 ├── templates/
-│   └── index.html        # Web interface HTML
+│   └── index.html        # Web interface HTML (EN/TR)
 └── static/               # Static files
 ```
 
@@ -118,7 +122,7 @@ You can upload your own Python bot files instead of using the template.
 4. Optionally add a `requirements.txt` and Discord token
 5. Click **Import** — dependencies are auto-installed
 
-Imported bots appear with an `IMPORTED` badge and support all management features (start, stop, monitor, logs, edit, replace, git push).
+Imported bots appear with an `IMPORTED` badge and support all management features (start, stop, monitor, logs, edit, replace file, git push/pull, invite).
 
 You can also **replace** any bot's source file later via the **Replace File** button on its card — this is useful for updating custom bots without losing configuration.
 
@@ -126,6 +130,33 @@ You can also **replace** any bot's source file later via the **Replace File** bu
 ```bash
 python3 manager.py import mybot ./my_bot.py --token TOKEN --requirements ./requirements.txt
 ```
+
+## Git Integration
+
+Each bot can have its own git repository. The manager supports:
+
+- **git init** — Auto-initialized on first push
+- **git push** — Commit and push changes to a remote
+- **git pull** — Pull latest updates from a remote (useful for syncing bots across multiple machines)
+
+### Via Web
+Each bot card has `↑ Git Push` and `↓ Git Pull` buttons.
+
+### Via CLI
+```bash
+python3 manager.py git-push mybot -m "update message"
+python3 manager.py git-pull mybot --remote origin --branch main
+```
+
+## Language Support
+
+Both the web interface and CLI support English (default) and Turkish:
+
+- **Web:** Click the `TR` / `EN` button in the top navbar
+- **CLI interactive:** Option `[14] Toggle Language (TR)` / `Dili Değiştir (EN)`
+- **CLI command:** `python3 manager.py lang en` or `python3 manager.py lang tr`
+
+Language preference is saved to `bot_config.json` and persists across sessions.
 
 ## templatebot.py
 
