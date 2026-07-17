@@ -6,7 +6,7 @@ import argparse
 from datetime import datetime
 from manager_core import (
     create_bot, install_deps, start_bot, stop_bot, restart_bot,
-    delete_bot, git_push, list_bots, get_bot_status, get_all_bots_status,
+    delete_bot, git_push, git_pull, list_bots, get_bot_status, get_all_bots_status,
     edit_bot_file, get_bot_logs, start_monitor, load_config, save_config, log,
     import_bot, get_bot_invite_url
 )
@@ -22,8 +22,9 @@ LANG = {
         "menu_restart": "Restart Bot",
         "menu_delete": "Delete Bot",
         "menu_edit": "Edit Bot",
-        "menu_git": "Git Push",
-        "menu_install": "Install Dependencies",
+                "menu_git_push": "Git Push",
+                "menu_git_pull": "Git Pull",
+                "menu_install": "Install Dependencies",
         "menu_logs": "Bot Logs",
         "menu_import": "Import Bot",
         "menu_web": "Web Interface",
@@ -82,8 +83,9 @@ LANG = {
         "menu_restart": "Bot Yeniden Ba\u015flat",
         "menu_delete": "Bot Sil",
         "menu_edit": "Bot D\u00fczenle",
-        "menu_git": "Git Push",
-        "menu_install": "Ba\u011f\u0131ml\u0131l\u0131klar\u0131 Kur",
+                "menu_git_push": "Git Push",
+                "menu_git_pull": "Git Pull",
+                "menu_install": "Ba\u011f\u0131ml\u0131l\u0131klar\u0131 Kur",
         "menu_logs": "Bot Loglar\u0131",
         "menu_import": "Bot \u0130\u00e7e Aktar",
         "menu_web": "Web Aray\u00fcz\u00fc",
@@ -205,10 +207,10 @@ def cmd_interactive():
         print(f"  [1] {t('menu_create')}    [2] {t('menu_start')}")
         print(f"  [3] {t('menu_stop')}     [4] {t('menu_restart')}")
         print(f"  [5] {t('menu_delete')}        [6] {t('menu_edit')}")
-        print(f"  [7] {t('menu_git')}       [8] {t('menu_install')}")
-        print(f"  [9] {t('menu_logs')}    [10] {t('menu_import')}")
-        print(f"  [11] {t('menu_web')}   [12] {t('menu_invite')}")
-        print(f"  [13] {t('menu_lang')}")
+        print(f"  [7] {t('menu_git_push')}    [8] {t('menu_git_pull')}")
+        print(f"  [9] {t('menu_install')}      [10] {t('menu_logs')}")
+        print(f"  [11] {t('menu_import')}      [12] {t('menu_web')}")
+        print(f"  [13] {t('menu_invite')}      [14] {t('menu_lang')}")
         print(f"  [0] {t('menu_exit')}")
         choice = input(f"\n  {t('choice')}").strip()
 
@@ -230,16 +232,18 @@ def cmd_interactive():
         elif choice == "7":
             cmd_git_push()
         elif choice == "8":
-            cmd_action(t("menu_install").lower(), install_deps)
+            cmd_pull()
         elif choice == "9":
-            cmd_logs()
+            cmd_action(t("menu_install").lower(), install_deps)
         elif choice == "10":
-            cmd_import()
+            cmd_logs()
         elif choice == "11":
-            start_web()
+            cmd_import()
         elif choice == "12":
-            cmd_invite()
+            start_web()
         elif choice == "13":
+            cmd_invite()
+        elif choice == "14":
             cur = _get_cli_lang()
             new = "tr" if cur == "en" else "en"
             _set_cli_lang(new)
@@ -348,6 +352,28 @@ def cmd_git_push():
         if 0 <= idx < len(bots):
             msg = input(f"  {t('commit_msg')}").strip() or None
             ok, result = git_push(bots[idx], msg)
+            print(f"  {'\u2705' if ok else '\u274c'} {result}")
+        else:
+            print(f"  {t('invalid_num')}")
+    except ValueError:
+        print(f"  {t('invalid_input')}")
+    _wait()
+
+
+def cmd_pull():
+    bots = list_bots()
+    if not bots:
+        print(f"  {t('no_bots_avail')}")
+        _wait()
+        return
+    for i, name in enumerate(bots, 1):
+        print(f"  [{i}] {name}")
+    try:
+        idx = int(input(f"  {t('select_num')}")) - 1
+        if 0 <= idx < len(bots):
+            remote = input("  Remote (default origin): ").strip() or "origin"
+            branch = input("  Branch (optional): ").strip() or None
+            ok, result = git_pull(bots[idx], remote, branch)
             print(f"  {'\u2705' if ok else '\u274c'} {result}")
         else:
             print(f"  {t('invalid_num')}")
@@ -500,9 +526,14 @@ def main():
         p_edit.add_argument("name", help="Bot name")
         p_edit.add_argument("--content", help="New content")
 
-        p_git = subparsers.add_parser("git-push", help="Git push bot")
-        p_git.add_argument("name", help="Bot name")
-        p_git.add_argument("-m", "--message", help="Commit message")
+        p_git_push = subparsers.add_parser("git-push", help="Git push bot")
+        p_git_push.add_argument("name", help="Bot name")
+        p_git_push.add_argument("-m", "--message", help="Commit message")
+
+        p_git_pull = subparsers.add_parser("git-pull", help="Git pull bot updates")
+        p_git_pull.add_argument("name", help="Bot name")
+        p_git_pull.add_argument("--remote", default="origin", help="Remote name (default: origin)")
+        p_git_pull.add_argument("--branch", help="Branch to pull")
 
         p_install = subparsers.add_parser("install", help="Install dependencies")
         p_install.add_argument("name", help="Bot name")
@@ -569,6 +600,9 @@ def main():
                     print(f"\u274c {content}")
         elif args.command == "git-push":
             ok, msg = git_push(args.name, args.message)
+            print(f"{'\u2705' if ok else '\u274c'} {msg}")
+        elif args.command == "git-pull":
+            ok, msg = git_pull(args.name, args.remote, args.branch)
             print(f"{'\u2705' if ok else '\u274c'} {msg}")
         elif args.command == "install":
             ok, msg = install_deps(args.name)

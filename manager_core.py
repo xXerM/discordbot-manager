@@ -249,6 +249,30 @@ def git_push(bot_name, commit_message=None):
         return False, f"Git hatası: {e.stderr.decode() if e.stderr else str(e)}"
 
 
+def git_pull(bot_name, remote="origin", branch=None):
+    config = load_config()
+    if bot_name not in config["bots"]:
+        return False, "Bot bulunamadı"
+
+    bot_dir = Path(config["bots"][bot_name]["directory"])
+    if not (bot_dir / ".git").exists():
+        return False, "Bu bot için git deposu bulunamadı"
+
+    try:
+        if branch:
+            result = subprocess.run(["git", "pull", remote, branch], cwd=str(bot_dir), capture_output=True, text=True)
+        else:
+            result = subprocess.run(["git", "pull", remote], cwd=str(bot_dir), capture_output=True, text=True)
+        if result.returncode != 0:
+            return False, f"Pull hatası: {result.stderr}"
+        log(bot_name, "Git pull yapıldı")
+        if "Already up to date" in result.stdout:
+            return True, "Bot zaten güncel"
+        return True, "Bot başarıyla güncellendi"
+    except subprocess.CalledProcessError as e:
+        return False, f"Git hatası: {e.stderr.decode() if e.stderr else str(e)}"
+
+
 def get_bot_status(bot_name):
     config = load_config()
     if bot_name not in config["bots"]:

@@ -650,6 +650,7 @@
                 token: 'Token',
                 gitPush: 'Git Push',
                 addToServer: 'Add to Server',
+                gitPull: 'Git Pull',
                 delete: 'Delete',
                 importBotBtn: 'Import Bot',
                 importTitle: 'Import Bot',
@@ -716,6 +717,7 @@
                 token: 'Token',
                 gitPush: 'Git Push',
                 addToServer: 'Sunucuya Ekle',
+                gitPull: 'Git Pull',
                 delete: 'Sil',
                 importBotBtn: 'Bot İçe Aktar',
                 importTitle: 'Bot İçe Aktar',
@@ -934,7 +936,8 @@
                             <button class="action-btn" onclick="showReplaceFile('${name}')"><i class="bi bi-upload"></i> ${t('replaceFile')}</button>
                             ${b.token ? `<button class="action-btn text-info" onclick="addToServer('${name}')"><i class="bi bi-box-arrow-up-right"></i> ${t('addToServer')}</button>` : ''}
                             <button class="action-btn" onclick="showEnv('${name}')"><i class="bi bi-key"></i> ${t('token')}</button>
-                            <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-git"></i> ${t('gitPush')}</button>
+                            <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-arrow-up"></i> ${t('gitPush')}</button>
+                            <button class="action-btn" onclick="gitPull('${name}')"><i class="bi bi-arrow-down"></i> ${t('gitPull')}</button>
                             <button class="action-btn text-danger" onclick="deleteBot('${name}')"><i class="bi bi-trash"></i> ${t('delete')}</button>
                         </div>
                     </div>
@@ -1162,6 +1165,16 @@
                     }
                 })
                 .catch(() => showToast(t('actionFailed'), 'error'));
+        }
+
+        function gitPull(name) {
+            fetch(`/api/bots/${name}/git-pull`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{}'
+            })
+                .then(r => r.json())
+                .then(data => showToast(data.message, data.success ? 'success' : 'error'));
         }
 
         function gitPush(name) {

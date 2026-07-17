@@ -3,7 +3,7 @@ import threading
 from flask import Flask, jsonify, request, render_template, send_from_directory
 from manager_core import (
     create_bot, install_deps, start_bot, stop_bot, restart_bot,
-    delete_bot, git_push, list_bots, get_bot_status, get_all_bots_status,
+    delete_bot, git_push, git_pull, list_bots, get_bot_status, get_all_bots_status,
     edit_bot_file, get_bot_logs, start_monitor, load_config, save_config, log,
     import_bot, get_bot_invite_url, replace_bot_file,
     BASE_DIR, BOTS_DIR
@@ -89,6 +89,15 @@ def api_replace_bot_file(name):
     if ok and req_content:
         install_deps(name)
     return jsonify({"success": ok, "message": msg}), (200 if ok else 400)
+
+
+@app.route("/api/bots/<name>/git-pull", methods=["POST"])
+def api_git_pull(name):
+    data = request.get_json() or {}
+    remote = data.get("remote", "origin")
+    branch = data.get("branch")
+    ok, result = git_pull(name, remote, branch)
+    return jsonify({"success": ok, "message": result}), (200 if ok else 400)
 
 
 @app.route("/api/bots/<name>/git-push", methods=["POST"])
