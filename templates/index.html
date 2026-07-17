@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -82,6 +82,22 @@
         }
 
         .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.85rem; }
+
+        .lang-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
 
         .stats-bar {
             background: var(--bg-card);
@@ -338,9 +354,10 @@
         <div class="container-fluid">
             <span class="navbar-brand"><i class="bi bi-robot"></i> Bot Manager</span>
             <div class="d-flex align-items-center gap-3">
-                <span class="badge" id="botCount">0 bot</span>
+                <span class="badge" id="botCount">0 bots</span>
+                <button class="lang-btn" id="langToggle" onclick="toggleLang()">TR</button>
                 <button class="btn btn-accent btn-sm" onclick="showCreateModal()">
-                    <i class="bi bi-plus-lg"></i> Yeni Bot
+                    <i class="bi bi-plus-lg"></i> <span data-i18n="newBotBtn">New Bot</span>
                 </button>
             </div>
         </div>
@@ -351,28 +368,28 @@
             <div class="stat-item">
                 <i class="bi bi-boxes"></i>
                 <div>
-                    <div class="stat-label">Toplam Bot</div>
+                    <div class="stat-label" data-i18n="totalBots">TOTAL BOTS</div>
                     <div class="stat-value" id="totalBots">0</div>
                 </div>
             </div>
             <div class="stat-item">
                 <i class="bi bi-play-circle" style="color: var(--success);"></i>
                 <div>
-                    <div class="stat-label">Aktif</div>
+                    <div class="stat-label" data-i18n="active">ACTIVE</div>
                     <div class="stat-value" id="activeBots">0</div>
                 </div>
             </div>
             <div class="stat-item">
                 <i class="bi bi-stop-circle" style="color: var(--danger);"></i>
                 <div>
-                    <div class="stat-label">Durduruldu</div>
+                    <div class="stat-label" data-i18n="stopped">STOPPED</div>
                     <div class="stat-value" id="stoppedBots">0</div>
                 </div>
             </div>
             <div class="stat-item">
                 <i class="bi bi-memory" style="color: var(--warning);"></i>
                 <div>
-                    <div class="stat-label">Toplam RAM</div>
+                    <div class="stat-label" data-i18n="totalRam">TOTAL RAM</div>
                     <div class="stat-value" id="totalRam">0 MB</div>
                 </div>
             </div>
@@ -387,29 +404,27 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Yeni Bot Oluştur</h5>
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i><span data-i18n="createTitle">Create New Bot</span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Bot Adı</label>
-                        <input type="text" class="form-control" id="newBotName" placeholder="ör: moderasyon-botu">
+                        <label class="form-label" data-i18n="botName">Bot Name</label>
+                        <input type="text" class="form-control" id="newBotName" placeholder="e.g. moderation-bot">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Discord Bot Tokeni</label>
+                        <label class="form-label" data-i18n="botToken">Discord Bot Token</label>
                         <input type="password" class="form-control" id="newBotToken" placeholder="MTE4...">
-                        <div class="form-text" style="color: var(--text-secondary); font-size: 0.75rem;">Tokeniniz güvende, sadece yerel olarak saklanır.</div>
+                        <div class="form-text" style="color: var(--text-secondary); font-size: 0.75rem;" data-i18n="tokenSafe">Your token is safe, stored locally only.</div>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="autoStartCheck">
-                        <label class="form-check-label" style="color: var(--text-secondary);">
-                            Oluşturulduktan sonra otomatik başlat
-                        </label>
+                        <label class="form-check-label" style="color: var(--text-secondary);" data-i18n="autoStart">Auto start after creation</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);">İptal</button>
-                    <button class="btn btn-accent" onclick="createBot()">Oluştur</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn btn-accent" onclick="createBot()" data-i18n="create">Create</button>
                 </div>
             </div>
         </div>
@@ -419,11 +434,11 @@
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-journal-text me-2"></i><span id="logsModalTitle">Loglar</span></h5>
+                    <h5 class="modal-title"><i class="bi bi-journal-text me-2"></i><span id="logsModalTitle"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="log-area" id="logsContent">Log yükleniyor...</div>
+                    <div class="log-area" id="logsContent"></div>
                 </div>
             </div>
         </div>
@@ -433,15 +448,15 @@
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-code-slash me-2"></i><span id="editModalTitle">Kod Düzenle</span></h5>
+                    <h5 class="modal-title"><i class="bi bi-code-slash me-2"></i><span id="editModalTitle"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <textarea class="code-editor" id="codeEditor" spellcheck="false"></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);">İptal</button>
-                    <button class="btn btn-accent" onclick="saveEdit()">Kaydet</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn btn-accent" onclick="saveEdit()" data-i18n="save">Save</button>
                 </div>
             </div>
         </div>
@@ -451,18 +466,18 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-key me-2"></i><span id="envModalTitle">Token Düzenle</span></h5>
+                    <h5 class="modal-title"><i class="bi bi-key me-2"></i><span id="envModalTitle"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Discord Bot Tokeni</label>
-                        <input type="password" class="form-control" id="editToken" placeholder="Yeni token">
+                        <label class="form-label" data-i18n="botToken">Discord Bot Token</label>
+                        <input type="password" class="form-control" id="editToken" placeholder="New token">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);">İptal</button>
-                    <button class="btn btn-accent" onclick="saveEnv()">Kaydet</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn btn-accent" onclick="saveEnv()" data-i18n="save">Save</button>
                 </div>
             </div>
         </div>
@@ -470,8 +485,155 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const LANG = {
+            en: {
+                newBotBtn: 'New Bot',
+                totalBots: 'TOTAL BOTS',
+                active: 'ACTIVE',
+                stopped: 'STOPPED',
+                totalRam: 'TOTAL RAM',
+                createTitle: 'Create New Bot',
+                botName: 'Bot Name',
+                botToken: 'Discord Bot Token',
+                tokenSafe: 'Your token is safe, stored locally only.',
+                autoStart: 'Auto start after creation',
+                cancel: 'Cancel',
+                create: 'Create',
+                save: 'Save',
+                logs: 'Logs',
+                editCode: 'Edit Code',
+                editToken: 'Edit Token',
+                loading: 'Loading...',
+                noLogs: '(no logs)',
+                failedLoadLogs: 'Failed to load logs',
+                failedLoadCode: 'Failed to load code',
+                running: 'Running',
+                stopped_status: 'Stopped',
+                error: 'Error',
+                restart: 'Restart',
+                stop: 'Stop',
+                start: 'Start',
+                logsBtn: 'Logs',
+                edit: 'Edit',
+                token: 'Token',
+                gitPush: 'Git Push',
+                delete: 'Delete',
+                ram: 'RAM',
+                cpu: 'CPU',
+                storage: 'STORAGE',
+                uptime: 'UPTIME',
+                noBots: 'No bots yet',
+                noBotsDesc: 'Start by creating a new bot.',
+                createFirst: 'Create First Bot',
+                failedLoadBots: 'Failed to load bots',
+                actionFailed: 'Action failed',
+                nameTokenRequired: 'Name and token required',
+                failedCreateBot: 'Failed to create bot',
+                tokenRequired: 'Token required',
+                commitMsg: 'Commit message (optional):',
+                confirmDelete: 'Are you sure you want to delete "{name}"?',
+                botCount: '{n} bots',
+                day: 'd',
+                hour: 'h',
+                min: 'm',
+                sec: 's',
+                pid: 'PID',
+            },
+            tr: {
+                newBotBtn: 'Yeni Bot',
+                totalBots: 'TOPLAM BOT',
+                active: 'AKTİF',
+                stopped: 'DURDURULDU',
+                totalRam: 'TOPLAM RAM',
+                createTitle: 'Yeni Bot Oluştur',
+                botName: 'Bot Adı',
+                botToken: 'Discord Bot Tokeni',
+                tokenSafe: 'Tokeniniz güvende, sadece yerel olarak saklanır.',
+                autoStart: 'Oluşturulduktan sonra otomatik başlat',
+                cancel: 'İptal',
+                create: 'Oluştur',
+                save: 'Kaydet',
+                logs: 'Loglar',
+                editCode: 'Kod Düzenle',
+                editToken: 'Token Düzenle',
+                loading: 'Yükleniyor...',
+                noLogs: '(log yok)',
+                failedLoadLogs: 'Loglar yüklenemedi',
+                failedLoadCode: 'Kod yüklenemedi',
+                running: 'Çalışıyor',
+                stopped_status: 'Durduruldu',
+                error: 'Hata',
+                restart: 'Yeniden Başlat',
+                stop: 'Durdur',
+                start: 'Başlat',
+                logsBtn: 'Loglar',
+                edit: 'Düzenle',
+                token: 'Token',
+                gitPush: 'Git Push',
+                delete: 'Sil',
+                ram: 'RAM',
+                cpu: 'CPU',
+                storage: 'DEPOLAMA',
+                uptime: 'AKTİF SÜRESİ',
+                noBots: 'Henüz bot bulunmuyor',
+                noBotsDesc: 'Yeni bir bot oluşturarak başlayın.',
+                createFirst: 'İlk Botu Oluştur',
+                failedLoadBots: 'Botlar yüklenirken hata oluştu',
+                actionFailed: 'İşlem başarısız',
+                nameTokenRequired: 'İsim ve token gerekli',
+                failedCreateBot: 'Bot oluşturulamadı',
+                tokenRequired: 'Token gerekli',
+                commitMsg: 'Commit mesajı (opsiyonel):',
+                confirmDelete: '"{name}" botunu silmek istediğinize emin misiniz?',
+                botCount: '{n} bot',
+                day: 'g',
+                hour: 's',
+                min: 'd',
+                sec: 'sn',
+                pid: 'PID',
+            }
+        };
+
+        let currentLang = localStorage.getItem('botManagerLang') || 'en';
         let currentBot = null;
         let botsData = {};
+
+        function t(key, vars = {}) {
+            let val = LANG[currentLang][key] || LANG['en'][key] || key;
+            for (const [k, v] of Object.entries(vars)) {
+                val = val.replace(`{${k}}`, v);
+            }
+            return val;
+        }
+
+        function applyLang() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                el.textContent = t(key);
+            });
+            document.getElementById('langToggle').textContent = currentLang === 'en' ? 'TR' : 'EN';
+            if (Object.keys(botsData).length > 0) renderBots(botsData);
+            const empty = document.querySelector('.empty-state');
+            if (empty) renderBots(botsData);
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'tr' : 'en';
+            localStorage.setItem('botManagerLang', currentLang);
+            applyLang();
+            updateDynamicTexts();
+        }
+
+        function updateDynamicTexts() {
+            const names = Object.keys(botsData);
+            document.getElementById('botCount').textContent = t('botCount', { n: names.length });
+            const emptyTitle = document.querySelector('.empty-state h5');
+            const emptyDesc = document.querySelector('.empty-state p');
+            const emptyBtn = document.querySelector('.empty-state .btn');
+            if (emptyTitle) emptyTitle.textContent = t('noBots');
+            if (emptyDesc) emptyDesc.textContent = t('noBotsDesc');
+            if (emptyBtn) emptyBtn.innerHTML = `<i class="bi bi-plus-lg"></i> ${t('createFirst')}`;
+        }
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
@@ -497,17 +659,17 @@
             const m = Math.floor((seconds % 3600) / 60);
             const s = Math.floor(seconds % 60);
             const parts = [];
-            if (d > 0) parts.push(d + 'g');
-            if (h > 0) parts.push(h + 's');
-            if (m > 0) parts.push(m + 'd');
-            parts.push(s + 'sn');
+            if (d > 0) parts.push(d + t('day'));
+            if (h > 0) parts.push(h + t('hour'));
+            if (m > 0) parts.push(m + t('min'));
+            parts.push(s + t('sec'));
             return parts.join(' ');
         }
 
         function getStatusBadge(status) {
-            if (status === 'running') return '<span class="status-badge status-running"><i class="bi bi-play-fill"></i> Çalışıyor</span>';
-            if (status === 'stopped') return '<span class="status-badge status-stopped"><i class="bi bi-stop-fill"></i> Durduruldu</span>';
-            return '<span class="status-badge status-error"><i class="bi bi-exclamation-triangle"></i> Hata</span>';
+            if (status === 'running') return `<span class="status-badge status-running"><i class="bi bi-play-fill"></i> ${t('running')}</span>`;
+            if (status === 'stopped') return `<span class="status-badge status-stopped"><i class="bi bi-stop-fill"></i> ${t('stopped_status')}</span>`;
+            return `<span class="status-badge status-error"><i class="bi bi-exclamation-triangle"></i> ${t('error')}</span>`;
         }
 
         function renderBots(bots) {
@@ -528,16 +690,16 @@
             document.getElementById('activeBots').textContent = active;
             document.getElementById('stoppedBots').textContent = stopped;
             document.getElementById('totalRam').textContent = totalRam.toFixed(1) + ' MB';
-            document.getElementById('botCount').textContent = names.length + ' bot';
+            document.getElementById('botCount').textContent = t('botCount', { n: names.length });
 
             if (names.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="bi bi-robot text-secondary"></i>
-                        <h5>Henüz bot bulunmuyor</h5>
-                        <p class="text-secondary">Yeni bir bot oluşturarak başlayın.</p>
+                        <h5>${t('noBots')}</h5>
+                        <p class="text-secondary">${t('noBotsDesc')}</p>
                         <button class="btn btn-accent" onclick="showCreateModal()">
-                            <i class="bi bi-plus-lg"></i> İlk Botu Oluştur
+                            <i class="bi bi-plus-lg"></i> ${t('createFirst')}
                         </button>
                     </div>
                 `;
@@ -556,37 +718,37 @@
                                 <span class="bot-name">${name}</span>
                                 ${getStatusBadge(status)}
                             </div>
-                            <small class="text-secondary" style="font-size: 0.75rem;">PID: ${b.pid || '-'}</small>
+                            <small class="text-secondary" style="font-size: 0.75rem;">${t('pid')}: ${b.pid || '-'}</small>
                         </div>
                         <div class="bot-metrics">
                             <div class="metric">
                                 <div class="metric-value" style="color: var(--success);">${b.memory_mb ? b.memory_mb.toFixed(1) + ' MB' : '-'}</div>
-                                <div class="metric-label">RAM</div>
+                                <div class="metric-label">${t('ram')}</div>
                             </div>
                             <div class="metric">
                                 <div class="metric-value">${b.cpu_percent ? b.cpu_percent.toFixed(1) + '%' : '-'}</div>
-                                <div class="metric-label">CPU</div>
+                                <div class="metric-label">${t('cpu')}</div>
                             </div>
                             <div class="metric">
                                 <div class="metric-value">${b.storage_mb ? b.storage_mb.toFixed(1) + ' MB' : '-'}</div>
-                                <div class="metric-label">Depolama</div>
+                                <div class="metric-label">${t('storage')}</div>
                             </div>
                             <div class="metric">
                                 <div class="metric-value">${formatUptime(b.uptime_seconds)}</div>
-                                <div class="metric-label">Aktif Süresi</div>
+                                <div class="metric-label">${t('uptime')}</div>
                             </div>
                         </div>
                         <div class="bot-actions">
                             ${status === 'running'
-                                ? `<button class="action-btn text-warning" onclick="actionBot('${name}', 'restart')"><i class="bi bi-arrow-repeat"></i> Yeniden Başlat</button>
-                                   <button class="action-btn text-danger" onclick="actionBot('${name}', 'stop')"><i class="bi bi-stop-fill"></i> Durdur</button>`
-                                : `<button class="action-btn text-success" onclick="actionBot('${name}', 'start')"><i class="bi bi-play-fill"></i> Başlat</button>`
+                                ? `<button class="action-btn text-warning" onclick="actionBot('${name}', 'restart')"><i class="bi bi-arrow-repeat"></i> ${t('restart')}</button>
+                                   <button class="action-btn text-danger" onclick="actionBot('${name}', 'stop')"><i class="bi bi-stop-fill"></i> ${t('stop')}</button>`
+                                : `<button class="action-btn text-success" onclick="actionBot('${name}', 'start')"><i class="bi bi-play-fill"></i> ${t('start')}</button>`
                             }
-                            <button class="action-btn" onclick="showLogs('${name}')"><i class="bi bi-journal-text"></i> Loglar</button>
-                            <button class="action-btn" onclick="showEdit('${name}')"><i class="bi bi-pencil"></i> Düzenle</button>
-                            <button class="action-btn" onclick="showEnv('${name}')"><i class="bi bi-key"></i> Token</button>
-                            <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-git"></i> Git Push</button>
-                            <button class="action-btn text-danger" onclick="deleteBot('${name}')"><i class="bi bi-trash"></i> Sil</button>
+                            <button class="action-btn" onclick="showLogs('${name}')"><i class="bi bi-journal-text"></i> ${t('logsBtn')}</button>
+                            <button class="action-btn" onclick="showEdit('${name}')"><i class="bi bi-pencil"></i> ${t('edit')}</button>
+                            <button class="action-btn" onclick="showEnv('${name}')"><i class="bi bi-key"></i> ${t('token')}</button>
+                            <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-git"></i> ${t('gitPush')}</button>
+                            <button class="action-btn text-danger" onclick="deleteBot('${name}')"><i class="bi bi-trash"></i> ${t('delete')}</button>
                         </div>
                     </div>
                 `;
@@ -598,7 +760,7 @@
             fetch('/api/bots')
                 .then(r => r.json())
                 .then(data => renderBots(data.bots || {}))
-                .catch(() => showToast('Botlar yüklenirken hata oluştu', 'error'));
+                .catch(() => showToast(t('failedLoadBots'), 'error'));
         }
 
         function actionBot(name, action) {
@@ -608,7 +770,7 @@
                     showToast(data.message, data.success ? 'success' : 'error');
                     if (data.success) loadBots();
                 })
-                .catch(() => showToast('İşlem başarısız', 'error'));
+                .catch(() => showToast(t('actionFailed'), 'error'));
         }
 
         function showCreateModal() {
@@ -623,7 +785,7 @@
             const token = document.getElementById('newBotToken').value.trim();
             const autoStart = document.getElementById('autoStartCheck').checked;
             if (!name || !token) {
-                showToast('İsim ve token gerekli', 'error');
+                showToast(t('nameTokenRequired'), 'error');
                 return;
             }
             fetch('/api/bots', {
@@ -639,11 +801,11 @@
                         loadBots();
                     }
                 })
-                .catch(() => showToast('Bot oluşturulamadı', 'error'));
+                .catch(() => showToast(t('failedCreateBot'), 'error'));
         }
 
         function deleteBot(name) {
-            if (!confirm(`"${name}" botunu silmek istediğinize emin misiniz?`)) return;
+            if (!confirm(t('confirmDelete', { name }))) return;
             fetch(`/api/bots/${name}`, { method: 'DELETE' })
                 .then(r => r.json())
                 .then(data => {
@@ -653,23 +815,23 @@
         }
 
         function showLogs(name) {
-            document.getElementById('logsModalTitle').textContent = `${name} - Loglar`;
-            document.getElementById('logsContent').textContent = 'Yükleniyor...';
+            document.getElementById('logsModalTitle').textContent = `${name} - ${t('logs')}`;
+            document.getElementById('logsContent').textContent = t('loading');
             const modal = new bootstrap.Modal(document.getElementById('logsModal'));
             modal.show();
             fetch(`/api/bots/${name}/logs?lines=100`)
                 .then(r => r.json())
                 .then(data => {
                     const logs = data.logs || [];
-                    document.getElementById('logsContent').textContent = logs.join('\n') || '(log yok)';
+                    document.getElementById('logsContent').textContent = logs.join('\n') || t('noLogs');
                 })
-                .catch(() => document.getElementById('logsContent').textContent = 'Loglar yüklenemedi');
+                .catch(() => document.getElementById('logsContent').textContent = t('failedLoadLogs'));
         }
 
         function showEdit(name) {
             currentBot = name;
-            document.getElementById('editModalTitle').textContent = `${name} - Kod Düzenle`;
-            document.getElementById('codeEditor').value = 'Yükleniyor...';
+            document.getElementById('editModalTitle').textContent = `${name} - ${t('editCode')}`;
+            document.getElementById('codeEditor').value = t('loading');
             const modal = new bootstrap.Modal(document.getElementById('editModal'));
             modal.show();
             fetch(`/api/bots/${name}/edit`)
@@ -678,7 +840,7 @@
                     document.getElementById('codeEditor').value = data.content || '';
                 })
                 .catch(() => {
-                    document.getElementById('codeEditor').value = 'Kod yüklenemedi';
+                    document.getElementById('codeEditor').value = t('failedLoadCode');
                 });
         }
 
@@ -699,7 +861,7 @@
 
         function showEnv(name) {
             currentBot = name;
-            document.getElementById('envModalTitle').textContent = `${name} - Token Düzenle`;
+            document.getElementById('envModalTitle').textContent = `${name} - ${t('editToken')}`;
             document.getElementById('editToken').value = '';
             new bootstrap.Modal(document.getElementById('envModal')).show();
         }
@@ -707,7 +869,7 @@
         function saveEnv() {
             if (!currentBot) return;
             const token = document.getElementById('editToken').value.trim();
-            if (!token) { showToast('Token gerekli', 'error'); return; }
+            if (!token) { showToast(t('tokenRequired'), 'error'); return; }
             fetch(`/api/bots/${currentBot}/env`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -721,7 +883,7 @@
         }
 
         function gitPush(name) {
-            const msg = prompt('Commit mesajı (opsiyonel):');
+            const msg = prompt(t('commitMsg'));
             const body = msg ? JSON.stringify({ message: msg }) : '{}';
             fetch(`/api/bots/${name}/git-push`, {
                 method: 'POST',
@@ -732,6 +894,7 @@
                 .then(data => showToast(data.message, data.success ? 'success' : 'error'));
         }
 
+        applyLang();
         loadBots();
         setInterval(loadBots, 5000);
     </script>

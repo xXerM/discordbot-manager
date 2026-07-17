@@ -19,7 +19,7 @@ A modern CLI + Web tool for managing Python-based Discord bots.
 ## Installation
 
 ```bash
-git clone https://github.com/user/bot-manager-python.git
+git clone https://github.com/xXerM/discordbot-manager.git
 cd bot-manager-python
 pip install -r requirements.txt
 ```
