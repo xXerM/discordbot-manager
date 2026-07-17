@@ -1,0 +1,43 @@
+# Environment files
+.env
+bots/*/.env
+
+# Bot directories (created by manager)
+bots/*/bot.py
+bots/*/requirements.txt
+bots/*/__pycache__/
+
+# Config (contains tokens)
+bot_config.json
+
+# Logs
+logs/
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environment
+venv/
+.env/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+*.orig
