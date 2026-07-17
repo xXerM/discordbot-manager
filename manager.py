@@ -6,7 +6,8 @@ from datetime import datetime
 from manager_core import (
     create_bot, install_deps, start_bot, stop_bot, restart_bot,
     delete_bot, git_push, list_bots, get_bot_status, get_all_bots_status,
-    edit_bot_file, get_bot_logs, start_monitor, load_config, save_config, log
+    edit_bot_file, get_bot_logs, start_monitor, load_config, save_config, log,
+    import_bot, get_bot_invite_url
 )
 
 def print_header():
@@ -45,7 +46,8 @@ def cmd_interactive():
         print("  [3] Bot Durdur     [4] Bot Yeniden Başlat")
         print("  [5] Bot Sil        [6] Bot Düzenle")
         print("  [7] Git Push       [8] Bağımlılıkları Kur")
-        print("  [9] Bot Logları    [10] Web Arayüzü Başlat")
+        print("  [9] Bot Logları    [10] Bot İçe Aktar")
+        print("  [11] Web Arayüzü   [12] Sunucuya Ekle (Davet)")
         print("  [0] Çıkış")
         choice = input("\n  Seçiminiz: ").strip()
 
@@ -71,7 +73,11 @@ def cmd_interactive():
         elif choice == "9":
             cmd_logs()
         elif choice == "10":
+            cmd_import()
+        elif choice == "11":
             start_web()
+        elif choice == "12":
+            cmd_invite()
         else:
             input("  Geçersiz seçim. Devam etmek için Enter'a basın...")
 
@@ -221,6 +227,55 @@ def cmd_action(action_name, func):
         print("  Geçersiz giriş!")
     input("  Devam etmek için Enter'a basın...")
 
+def cmd_import():
+    name = input("  Bot adı: ").strip()
+    if not name:
+        print("  Bot adı boş olamaz!")
+        input("  Devam etmek için Enter'a basın...")
+        return
+    bot_path = input("  Bot Python dosyası yolu: ").strip()
+    if not bot_path or not os.path.isfile(bot_path):
+        print("  Geçerli bir dosya yolu girin!")
+        input("  Devam etmek için Enter'a basın...")
+        return
+    token = input("  Discord Bot Token (opsiyonel): ").strip()
+    req_path = input("  Requirements dosyası yolu (opsiyonel): ").strip()
+    req_content = None
+    if req_path and os.path.isfile(req_path):
+        with open(req_path, encoding="utf-8") as f:
+            req_content = f.read()
+    with open(bot_path, encoding="utf-8") as f:
+        bot_code = f.read()
+    ok, msg = import_bot(name, bot_code, token, req_content)
+    print(f"  {'✅' if ok else '❌'} {msg}")
+    if ok:
+        print("  Bağımlılıklar kuruluyor...")
+        ok2, msg2 = install_deps(name)
+        print(f"  {'✅' if ok2 else '❌'} {msg2}")
+    input("  Devam etmek için Enter'a basın...")
+
+def cmd_invite():
+    bots = list_bots()
+    if not bots:
+        print("  Bot yok.")
+        input("  Devam etmek için Enter'a basın...")
+        return
+    for i, name in enumerate(bots, 1):
+        print(f"  [{i}] {name}")
+    try:
+        idx = int(input("  Davet linki alınacak bot: ")) - 1
+        if 0 <= idx < len(bots):
+            url, msg = get_bot_invite_url(bots[idx])
+            if url:
+                print(f"  ✅ Davet linki: {url}")
+            else:
+                print(f"  ❌ {msg}")
+        else:
+            print("  Geçersiz numara!")
+    except ValueError:
+        print("  Geçersiz giriş!")
+    input("  Devam etmek için Enter'a basın...")
+
 def start_web():
     print("  Web arayüzü başlatılıyor...")
     print("  http://localhost:5000 adresinden erişebilirsiniz.")
@@ -274,6 +329,15 @@ def main():
 
         p_install = subparsers.add_parser("install", help="Bağımlılıkları kur")
         p_install.add_argument("name", help="Bot adı")
+
+        p_import = subparsers.add_parser("import", help="Bot dosyasını içe aktar")
+        p_import.add_argument("name", help="Bot adı")
+        p_import.add_argument("file", help="Python dosyası yolu")
+        p_import.add_argument("--token", help="Discord bot tokeni")
+        p_import.add_argument("--requirements", help="Requirements dosyası yolu")
+
+        p_invite = subparsers.add_parser("invite", help="Bot davet linki")
+        p_invite.add_argument("name", help="Bot adı")
 
         p_web = subparsers.add_parser("web", help="Web arayüzünü başlat")
 
@@ -329,6 +393,30 @@ def main():
         elif args.command == "install":
             ok, msg = install_deps(args.name)
             print(f"{'✅' if ok else '❌'} {msg}")
+        elif args.command == "import":
+            if not os.path.isfile(args.file):
+                print("Dosya bulunamadı!")
+                return
+            with open(args.file, encoding="utf-8") as f:
+                bot_code = f.read()
+            req_content = None
+            if args.requirements:
+                if os.path.isfile(args.requirements):
+                    with open(args.requirements, encoding="utf-8") as f:
+                        req_content = f.read()
+                else:
+                    print("Requirements dosyası bulunamadı!")
+                    return
+            ok, msg = import_bot(args.name, bot_code, args.token, req_content)
+            print(f"{'✅' if ok else '❌'} {msg}")
+            if ok:
+                install_deps(args.name)
+        elif args.command == "invite":
+            url, msg = get_bot_invite_url(args.name)
+            if url:
+                print(f"Davet linki: {url}")
+            else:
+                print(f"❌ {msg}")
         elif args.command == "web":
             start_web()
         else:

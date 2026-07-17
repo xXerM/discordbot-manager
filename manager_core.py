@@ -85,10 +85,11 @@ def install_deps(bot_name):
     if not req_file.exists():
         return False, "requirements.txt bulunamadı"
     try:
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", "-r", str(req_file)],
-            cwd=str(bot_dir), check=True, capture_output=True, text=True
-        )
+        cmd = [sys.executable, "-m", "pip", "install", "-r", str(req_file)]
+        try:
+            result = subprocess.run(cmd, cwd=str(bot_dir), check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError:
+            result = subprocess.run(cmd + ["--break-system-packages"], cwd=str(bot_dir), check=True, capture_output=True, text=True)
         log(bot_name, "Bağımlılıklar kuruldu")
         return True, "Bağımlılıklar başarıyla kuruldu"
     except subprocess.CalledProcessError as e:
@@ -322,6 +323,58 @@ def monitor_loop(interval=5):
                         save_config(config)
                         start_bot(name)
         save_config(config)
+
+
+def import_bot(name, bot_code, token=None, requirements_content=None):
+    if not bot_code:
+        return False, "Bot kodu gerekli"
+
+    bot_dir = BOTS_DIR / name
+    if bot_dir.exists():
+        return False, f"'{name}' adında bir bot zaten var"
+
+    bot_dir.mkdir(parents=True)
+    (bot_dir / "bot.py").write_text(bot_code, encoding="utf-8")
+
+    if token:
+        (bot_dir / ".env").write_text(f"DISCORD_TOKEN={token}\n")
+
+    if requirements_content:
+        (bot_dir / "requirements.txt").write_text(requirements_content, encoding="utf-8")
+    else:
+        (bot_dir / "requirements.txt").write_text("discord.py\naiohttp\npython-dotenv\n")
+
+    config = load_config()
+    config["bots"][name] = {
+        "token": token or "",
+        "created_at": datetime.now().isoformat(),
+        "status": "stopped",
+        "pid": None,
+        "directory": str(bot_dir),
+        "auto_restart": False
+    }
+    save_config(config)
+
+    log(name, "Bot dosyadan içe aktarıldı")
+    return True, "Bot başarıyla içe aktarıldı"
+
+
+def get_bot_invite_url(bot_name):
+    config = load_config()
+    if bot_name not in config["bots"]:
+        return None, "Bot bulunamadı"
+
+    token = config["bots"][bot_name].get("token", "")
+    if not token:
+        return None, "Bot tokeni bulunamadı"
+
+    parts = token.split(".")
+    if len(parts) < 2:
+        return None, "Geçersiz token formatı"
+
+    client_id = parts[0]
+    url = f"https://discord.com/api/oauth2/authorize?client_id={client_id}&permissions=8&scope=bot"
+    return url, "OK"
 
 
 def start_monitor():

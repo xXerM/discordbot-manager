@@ -5,6 +5,7 @@ from manager_core import (
     create_bot, install_deps, start_bot, stop_bot, restart_bot,
     delete_bot, git_push, list_bots, get_bot_status, get_all_bots_status,
     edit_bot_file, get_bot_logs, start_monitor, load_config, save_config, log,
+    import_bot, get_bot_invite_url,
     BASE_DIR, BOTS_DIR
 )
 
@@ -114,6 +115,37 @@ def api_env(name):
     config["bots"][name]["token"] = token
     save_config(config)
     return jsonify({"success": True, "message": "Token güncellendi"})
+
+
+@app.route("/api/bots/import", methods=["POST"])
+def api_import_bot():
+    name = request.form.get("name", "").strip()
+    token = request.form.get("token", "").strip()
+    bot_file = request.files.get("bot_file")
+    req_file = request.files.get("req_file")
+
+    if not name:
+        return jsonify({"error": "Bot adı gerekli"}), 400
+    if not bot_file:
+        return jsonify({"error": "Bot Python dosyası gerekli"}), 400
+
+    bot_code = bot_file.read().decode("utf-8")
+    req_content = None
+    if req_file and req_file.filename:
+        req_content = req_file.read().decode("utf-8")
+
+    ok, msg = import_bot(name, bot_code, token, req_content)
+    if ok:
+        install_deps(name)
+    return jsonify({"success": ok, "message": msg}), (200 if ok else 400)
+
+
+@app.route("/api/bots/<name>/invite", methods=["GET"])
+def api_bot_invite(name):
+    url, msg = get_bot_invite_url(name)
+    if url is None:
+        return jsonify({"error": msg}), 404
+    return jsonify({"url": url})
 
 
 @app.route("/api/bots/<name>/auto-restart", methods=["POST"])

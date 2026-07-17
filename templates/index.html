@@ -356,6 +356,9 @@
             <div class="d-flex align-items-center gap-3">
                 <span class="badge" id="botCount">0 bots</span>
                 <button class="lang-btn" id="langToggle" onclick="toggleLang()">TR</button>
+                <button class="btn btn-outline-accent btn-sm" onclick="showImportModal()">
+                    <i class="bi bi-upload"></i> <span data-i18n="importBotBtn">Import Bot</span>
+                </button>
                 <button class="btn btn-accent btn-sm" onclick="showCreateModal()">
                     <i class="bi bi-plus-lg"></i> <span data-i18n="newBotBtn">New Bot</span>
                 </button>
@@ -462,6 +465,39 @@
         </div>
     </div>
 
+    <div class="modal fade" id="importModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-upload me-2"></i><span data-i18n="importTitle">Import Bot</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="botName">Bot Name</label>
+                        <input type="text" class="form-control" id="importBotName" placeholder="e.g. my-custom-bot">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="importBotFile">Bot Python File (.py)</label>
+                        <input type="file" class="form-control" id="importBotFile" accept=".py">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="importReqFile">Requirements File (optional, .txt)</label>
+                        <input type="file" class="form-control" id="importReqFile" accept=".txt">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="botTokenOptional">Discord Bot Token (optional)</label>
+                        <input type="password" class="form-control" id="importBotToken" placeholder="MTE4...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn btn-accent" onclick="importBot()" data-i18n="importBtn">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="envModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -517,7 +553,14 @@
                 edit: 'Edit',
                 token: 'Token',
                 gitPush: 'Git Push',
+                addToServer: 'Add to Server',
                 delete: 'Delete',
+                importBotBtn: 'Import Bot',
+                importTitle: 'Import Bot',
+                importBotFile: 'Bot Python File (.py)',
+                importReqFile: 'Requirements File (optional, .txt)',
+                importBtn: 'Import',
+                botTokenOptional: 'Discord Bot Token (optional)',
                 ram: 'RAM',
                 cpu: 'CPU',
                 storage: 'STORAGE',
@@ -570,7 +613,14 @@
                 edit: 'Düzenle',
                 token: 'Token',
                 gitPush: 'Git Push',
+                addToServer: 'Sunucuya Ekle',
                 delete: 'Sil',
+                importBotBtn: 'Bot İçe Aktar',
+                importTitle: 'Bot İçe Aktar',
+                importBotFile: 'Bot Python Dosyası (.py)',
+                importReqFile: 'Requirements Dosyası (opsiyonel, .txt)',
+                importBtn: 'İçe Aktar',
+                botTokenOptional: 'Discord Bot Tokeni (opsiyonel)',
                 ram: 'RAM',
                 cpu: 'CPU',
                 storage: 'DEPOLAMA',
@@ -746,6 +796,7 @@
                             }
                             <button class="action-btn" onclick="showLogs('${name}')"><i class="bi bi-journal-text"></i> ${t('logsBtn')}</button>
                             <button class="action-btn" onclick="showEdit('${name}')"><i class="bi bi-pencil"></i> ${t('edit')}</button>
+                            ${b.token ? `<button class="action-btn text-info" onclick="addToServer('${name}')"><i class="bi bi-box-arrow-up-right"></i> ${t('addToServer')}</button>` : ''}
                             <button class="action-btn" onclick="showEnv('${name}')"><i class="bi bi-key"></i> ${t('token')}</button>
                             <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-git"></i> ${t('gitPush')}</button>
                             <button class="action-btn text-danger" onclick="deleteBot('${name}')"><i class="bi bi-trash"></i> ${t('delete')}</button>
@@ -880,6 +931,59 @@
                     showToast(data.message, data.success ? 'success' : 'error');
                     if (data.success) bootstrap.Modal.getInstance(document.getElementById('envModal')).hide();
                 });
+        }
+
+        function showImportModal() {
+            document.getElementById('importBotName').value = '';
+            document.getElementById('importBotToken').value = '';
+            document.getElementById('importBotFile').value = '';
+            document.getElementById('importReqFile').value = '';
+            new bootstrap.Modal(document.getElementById('importModal')).show();
+        }
+
+        function importBot() {
+            const name = document.getElementById('importBotName').value.trim();
+            const token = document.getElementById('importBotToken').value.trim();
+            const botFile = document.getElementById('importBotFile').files[0];
+            const reqFile = document.getElementById('importReqFile').files[0];
+
+            if (!name || !botFile) {
+                showToast(t('nameTokenRequired'), 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('token', token);
+            formData.append('bot_file', botFile);
+            if (reqFile) formData.append('req_file', reqFile);
+
+            fetch('/api/bots/import', {
+                method: 'POST',
+                body: formData
+            })
+                .then(r => r.json())
+                .then(data => {
+                    showToast(data.message, data.success ? 'success' : 'error');
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
+                        loadBots();
+                    }
+                })
+                .catch(() => showToast(t('failedCreateBot'), 'error'));
+        }
+
+        function addToServer(name) {
+            fetch(`/api/bots/${name}/invite`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.url) {
+                        window.open(data.url, '_blank');
+                    } else {
+                        showToast(data.error || 'Failed to generate invite link', 'error');
+                    }
+                })
+                .catch(() => showToast(t('actionFailed'), 'error'));
         }
 
         function gitPush(name) {
