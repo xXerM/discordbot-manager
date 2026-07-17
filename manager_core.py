@@ -427,6 +427,8 @@ def import_bot(name, bot_code, token=None, requirements_content=None):
 
 
 def get_bot_invite_url(bot_name):
+    import base64
+
     config = load_config()
     if bot_name not in config["bots"]:
         return None, "Bot bulunamadı"
@@ -439,7 +441,14 @@ def get_bot_invite_url(bot_name):
     if len(parts) < 2:
         return None, "Geçersiz token formatı"
 
-    client_id = parts[0]
+    raw_id = parts[0]
+    try:
+        padded = raw_id + "=" * (4 - len(raw_id) % 4) if len(raw_id) % 4 else raw_id
+        decoded = base64.b64decode(padded).decode("utf-8")
+        client_id = decoded
+    except Exception:
+        client_id = raw_id
+
     url = f"https://discord.com/api/oauth2/authorize?client_id={client_id}&permissions=8&scope=bot"
     return url, "OK"
 
