@@ -68,7 +68,8 @@ def create_bot(name, token):
         "status": "stopped",
         "pid": None,
         "directory": str(bot_dir),
-        "auto_restart": False
+        "auto_restart": False,
+        "source": "template"
     }
     save_config(config)
 
@@ -309,6 +310,26 @@ def edit_bot_file(bot_name, content=None):
     return True, bot_file.read_text(encoding="utf-8")
 
 
+def replace_bot_file(bot_name, bot_code, requirements_content=None, token=None):
+    config = load_config()
+    if bot_name not in config["bots"]:
+        return False, "Bot bulunamadı"
+
+    bot_dir = Path(config["bots"][bot_name]["directory"])
+    (bot_dir / "bot.py").write_text(bot_code, encoding="utf-8")
+
+    if token:
+        config["bots"][bot_name]["token"] = token
+        (bot_dir / ".env").write_text(f"DISCORD_TOKEN={token}\n")
+
+    if requirements_content is not None:
+        (bot_dir / "requirements.txt").write_text(requirements_content, encoding="utf-8")
+
+    save_config(config)
+    log(bot_name, "Bot dosyası değiştirildi")
+    return True, "Bot dosyası başarıyla güncellendi"
+
+
 def get_bot_logs(bot_name, lines=50):
     log_path = get_log_path(bot_name)
     if not log_path.exists():
@@ -376,7 +397,8 @@ def import_bot(name, bot_code, token=None, requirements_content=None):
         "status": "stopped",
         "pid": None,
         "directory": str(bot_dir),
-        "auto_restart": False
+        "auto_restart": False,
+        "source": "imported"
     }
     save_config(config)
 

@@ -5,6 +5,8 @@ A modern CLI + Web tool for managing Python-based Discord bots.
 ## Features
 
 - **Bot Creation** — Creates new bots from the `templatebot.py` template
+- **Import Existing Bots** — Upload your own `.py` bot files with drag-and-drop; auto-installs dependencies
+- **Replace Bot Files** — Update any bot's source code by uploading a new file (keeps config & token)
 - **Start / Stop / Restart** — Manage bot processes
 - **Code Editing** — Edit bot files via CLI or web interface
 - **Token Management** — Update tokens in `.env` files
@@ -80,6 +82,12 @@ python3 manager.py git-push mybot -m "update"
 
 # Install dependencies
 python3 manager.py install mybot
+
+# Import an existing bot from file
+python3 manager.py import mybot /path/to/bot.py --token TOKEN --requirements /path/to/requirements.txt
+
+# Get Discord invite link for a bot
+python3 manager.py invite mybot
 ```
 
 ## File Structure
@@ -97,6 +105,26 @@ bot-manager-python/
 ├── templates/
 │   └── index.html        # Web interface HTML
 └── static/               # Static files
+```
+
+## Importing Your Own Bots
+
+You can upload your own Python bot files instead of using the template.
+
+### Via Web Interface
+1. Click **Import Bot** in the top navbar
+2. Enter a bot name
+3. Drag & drop your `.py` file (or click to browse)
+4. Optionally add a `requirements.txt` and Discord token
+5. Click **Import** — dependencies are auto-installed
+
+Imported bots appear with an `IMPORTED` badge and support all management features (start, stop, monitor, logs, edit, replace, git push).
+
+You can also **replace** any bot's source file later via the **Replace File** button on its card — this is useful for updating custom bots without losing configuration.
+
+### Via CLI
+```bash
+python3 manager.py import mybot ./my_bot.py --token TOKEN --requirements ./requirements.txt
 ```
 
 ## templatebot.py

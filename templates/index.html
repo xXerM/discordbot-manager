@@ -343,6 +343,55 @@
             margin-bottom: 1rem;
         }
 
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .drop-zone i {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .drop-zone .file-name {
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-top: 0.5rem;
+        }
+
+        .source-badge {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .source-template {
+            background: rgba(108, 92, 231, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+
+        .source-imported {
+            background: rgba(0, 214, 143, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(0, 214, 143, 0.3);
+        }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
@@ -479,11 +528,20 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label" data-i18n="importBotFile">Bot Python File (.py)</label>
-                        <input type="file" class="form-control" id="importBotFile" accept=".py">
+                        <div class="drop-zone" id="importDropZone" onclick="document.getElementById('importBotFile').click()">
+                            <i class="bi bi-cloud-upload"></i>
+                            <div data-i18n="dropHere">Drop .py file here or click to browse</div>
+                            <div class="file-name" id="importFileName"></div>
+                        </div>
+                        <input type="file" class="d-none" id="importBotFile" accept=".py" onchange="updateFileName(this, 'importFileName')">
                     </div>
                     <div class="mb-3">
                         <label class="form-label" data-i18n="importReqFile">Requirements File (optional, .txt)</label>
-                        <input type="file" class="form-control" id="importReqFile" accept=".txt">
+                        <div class="drop-zone" id="reqDropZone" onclick="document.getElementById('importReqFile').click()" style="padding: 1rem;">
+                            <div data-i18n="dropHereReq">Drop .txt or click to browse</div>
+                            <div class="file-name" id="reqFileName"></div>
+                        </div>
+                        <input type="file" class="d-none" id="importReqFile" accept=".txt" onchange="updateFileName(this, 'reqFileName')">
                     </div>
                     <div class="mb-3">
                         <label class="form-label" data-i18n="botTokenOptional">Discord Bot Token (optional)</label>
@@ -493,6 +551,44 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
                     <button class="btn btn-accent" onclick="importBot()" data-i18n="importBtn">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="replaceFileModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-arrow-repeat me-2"></i><span id="replaceModalTitle"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="importBotFile">Bot Python File (.py)</label>
+                        <div class="drop-zone" id="replaceDropZone" onclick="document.getElementById('replaceBotFile').click()">
+                            <i class="bi bi-cloud-upload"></i>
+                            <div data-i18n="dropHere">Drop .py file here or click to browse</div>
+                            <div class="file-name" id="replaceFileName"></div>
+                        </div>
+                        <input type="file" class="d-none" id="replaceBotFile" accept=".py" onchange="updateFileName(this, 'replaceFileName')">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="importReqFile">Requirements File (optional, .txt)</label>
+                        <div class="drop-zone" onclick="document.getElementById('replaceReqFile').click()" style="padding: 1rem;">
+                            <div data-i18n="dropHereReq">Drop .txt or click to browse</div>
+                            <div class="file-name" id="replaceReqFileName"></div>
+                        </div>
+                        <input type="file" class="d-none" id="replaceReqFile" accept=".txt" onchange="updateFileName(this, 'replaceReqFileName')">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="botTokenOptional">Discord Bot Token (optional)</label>
+                        <input type="password" class="form-control" id="replaceBotToken" placeholder="Leave empty to keep current">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn btn-accent" onclick="replaceBotFile()" data-i18n="replaceBtn">Replace</button>
                 </div>
             </div>
         </div>
@@ -560,7 +656,13 @@
                 importBotFile: 'Bot Python File (.py)',
                 importReqFile: 'Requirements File (optional, .txt)',
                 importBtn: 'Import',
+                replaceBtn: 'Replace',
+                replaceFile: 'Replace File',
+                dropHere: 'Drop .py file here or click to browse',
+                dropHereReq: 'Drop .txt or click to browse',
                 botTokenOptional: 'Discord Bot Token (optional)',
+                sourceTemplate: 'TEMPLATE',
+                sourceImported: 'IMPORTED',
                 ram: 'RAM',
                 cpu: 'CPU',
                 storage: 'STORAGE',
@@ -620,7 +722,13 @@
                 importBotFile: 'Bot Python Dosyası (.py)',
                 importReqFile: 'Requirements Dosyası (opsiyonel, .txt)',
                 importBtn: 'İçe Aktar',
+                replaceBtn: 'Değiştir',
+                replaceFile: 'Dosya Değiştir',
+                dropHere: '.py dosyasını buraya bırakın veya tıklayın',
+                dropHereReq: '.txt dosyasını buraya bırakın veya tıklayın',
                 botTokenOptional: 'Discord Bot Tokeni (opsiyonel)',
+                sourceTemplate: 'ŞABLON',
+                sourceImported: 'İÇE AKTARILDI',
                 ram: 'RAM',
                 cpu: 'CPU',
                 storage: 'DEPOLAMA',
@@ -716,6 +824,32 @@
             return parts.join(' ');
         }
 
+        function getSourceBadge(source) {
+            if (source === 'imported') return `<span class="source-badge source-imported">${t('sourceImported')}</span>`;
+            return `<span class="source-badge source-template">${t('sourceTemplate')}</span>`;
+        }
+
+        function updateFileName(input, displayId) {
+            const name = input.files[0] ? input.files[0].name : '';
+            document.getElementById(displayId).textContent = name;
+        }
+
+        function setupDropZone(zoneId, inputId) {
+            const zone = document.getElementById(zoneId);
+            const input = document.getElementById(inputId);
+            if (!zone || !input) return;
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    input.files = e.dataTransfer.files;
+                    updateFileName(input, zoneId === 'importDropZone' ? 'importFileName' : zoneId === 'replaceDropZone' ? 'replaceFileName' : 'reqFileName');
+                }
+            });
+        }
+
         function getStatusBadge(status) {
             if (status === 'running') return `<span class="status-badge status-running"><i class="bi bi-play-fill"></i> ${t('running')}</span>`;
             if (status === 'stopped') return `<span class="status-badge status-stopped"><i class="bi bi-stop-fill"></i> ${t('stopped_status')}</span>`;
@@ -766,6 +900,7 @@
                         <div class="bot-header">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="bot-name">${name}</span>
+                                ${getSourceBadge(b.source)}
                                 ${getStatusBadge(status)}
                             </div>
                             <small class="text-secondary" style="font-size: 0.75rem;">${t('pid')}: ${b.pid || '-'}</small>
@@ -796,6 +931,7 @@
                             }
                             <button class="action-btn" onclick="showLogs('${name}')"><i class="bi bi-journal-text"></i> ${t('logsBtn')}</button>
                             <button class="action-btn" onclick="showEdit('${name}')"><i class="bi bi-pencil"></i> ${t('edit')}</button>
+                            <button class="action-btn" onclick="showReplaceFile('${name}')"><i class="bi bi-upload"></i> ${t('replaceFile')}</button>
                             ${b.token ? `<button class="action-btn text-info" onclick="addToServer('${name}')"><i class="bi bi-box-arrow-up-right"></i> ${t('addToServer')}</button>` : ''}
                             <button class="action-btn" onclick="showEnv('${name}')"><i class="bi bi-key"></i> ${t('token')}</button>
                             <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-git"></i> ${t('gitPush')}</button>
@@ -973,6 +1109,48 @@
                 .catch(() => showToast(t('failedCreateBot'), 'error'));
         }
 
+        function showReplaceFile(name) {
+            currentBot = name;
+            document.getElementById('replaceModalTitle').textContent = `${name} - ${t('replaceFile')}`;
+            document.getElementById('replaceBotToken').value = '';
+            document.getElementById('replaceBotFile').value = '';
+            document.getElementById('replaceReqFile').value = '';
+            document.getElementById('replaceFileName').textContent = '';
+            document.getElementById('replaceReqFileName').textContent = '';
+            new bootstrap.Modal(document.getElementById('replaceFileModal')).show();
+        }
+
+        function replaceBotFile() {
+            if (!currentBot) return;
+            const token = document.getElementById('replaceBotToken').value.trim();
+            const botFile = document.getElementById('replaceBotFile').files[0];
+            const reqFile = document.getElementById('replaceReqFile').files[0];
+
+            if (!botFile) {
+                showToast(t('nameTokenRequired'), 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('token', token);
+            formData.append('bot_file', botFile);
+            if (reqFile) formData.append('req_file', reqFile);
+
+            fetch(`/api/bots/${currentBot}/replace-file`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(r => r.json())
+                .then(data => {
+                    showToast(data.message, data.success ? 'success' : 'error');
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('replaceFileModal')).hide();
+                        loadBots();
+                    }
+                })
+                .catch(() => showToast(t('actionFailed'), 'error'));
+        }
+
         function addToServer(name) {
             fetch(`/api/bots/${name}/invite`)
                 .then(r => r.json())
@@ -999,6 +1177,9 @@
         }
 
         applyLang();
+        setupDropZone('importDropZone', 'importBotFile');
+        setupDropZone('reqDropZone', 'importReqFile');
+        setupDropZone('replaceDropZone', 'replaceBotFile');
         loadBots();
         setInterval(loadBots, 5000);
     </script>

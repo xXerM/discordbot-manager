@@ -5,7 +5,7 @@ from manager_core import (
     create_bot, install_deps, start_bot, stop_bot, restart_bot,
     delete_bot, git_push, list_bots, get_bot_status, get_all_bots_status,
     edit_bot_file, get_bot_logs, start_monitor, load_config, save_config, log,
-    import_bot, get_bot_invite_url,
+    import_bot, get_bot_invite_url, replace_bot_file,
     BASE_DIR, BOTS_DIR
 )
 
@@ -68,6 +68,26 @@ def api_restart_bot(name):
 @app.route("/api/bots/<name>", methods=["DELETE"])
 def api_delete_bot(name):
     ok, msg = delete_bot(name)
+    return jsonify({"success": ok, "message": msg}), (200 if ok else 400)
+
+
+@app.route("/api/bots/<name>/replace-file", methods=["POST"])
+def api_replace_bot_file(name):
+    bot_file = request.files.get("bot_file")
+    req_file = request.files.get("req_file")
+    token = request.form.get("token", "").strip()
+
+    if not bot_file:
+        return jsonify({"error": "Bot Python dosyası gerekli"}), 400
+
+    bot_code = bot_file.read().decode("utf-8")
+    req_content = None
+    if req_file and req_file.filename:
+        req_content = req_file.read().decode("utf-8")
+
+    ok, msg = replace_bot_file(name, bot_code, req_content, token or None)
+    if ok and req_content:
+        install_deps(name)
     return jsonify({"success": ok, "message": msg}), (200 if ok else 400)
 
 
