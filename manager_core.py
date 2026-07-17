@@ -19,15 +19,19 @@ LOGS_DIR = BASE_DIR / "logs"
 os.makedirs(BOTS_DIR, exist_ok=True)
 os.makedirs(LOGS_DIR, exist_ok=True)
 
+_config_lock = threading.Lock()
+
 
 def load_config():
-    if CONFIG_FILE.exists():
-        return json.loads(CONFIG_FILE.read_text())
-    return {"bots": {}}
+    with _config_lock:
+        if CONFIG_FILE.exists():
+            return json.loads(CONFIG_FILE.read_text())
+        return {"bots": {}}
 
 
 def save_config(config):
-    CONFIG_FILE.write_text(json.dumps(config, indent=2, ensure_ascii=False))
+    with _config_lock:
+        CONFIG_FILE.write_text(json.dumps(config, indent=2, ensure_ascii=False))
 
 
 def get_log_path(bot_name):
@@ -111,13 +115,21 @@ def start_bot(bot_name):
     if not bot_script.exists():
         return False, "bot.py bulunamadı"
 
+    if not bot_info.get("token"):
+        return False, "Bot tokeni bulunamadı"
+
     env = os.environ.copy()
     env["DISCORD_TOKEN"] = bot_info["token"]
+
+    env_file = bot_dir / ".env"
+    if not env_file.exists():
+        env_file.write_text(f"DISCORD_TOKEN={bot_info['token']}\n")
 
     log_path = get_log_path(bot_name)
     try:
         with open(log_path, "a") as log_file:
             log_file.write(f"\n--- Bot başlatılıyor: {datetime.now().isoformat()} ---\n")
+            log_file.flush()
             process = subprocess.Popen(
                 [sys.executable, str(bot_script)],
                 cwd=str(bot_dir),
@@ -127,16 +139,24 @@ def start_bot(bot_name):
                 stdin=subprocess.DEVNULL
             )
 
-        time.sleep(2)
-        poll = process.poll()
-        if poll is not None:
+        time.sleep(3)
+
+        alive = False
+        try:
+            proc = psutil.Process(process.pid)
+            if proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE:
+                alive = True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+
+        if not alive:
             bot_info["status"] = "stopped"
             bot_info["pid"] = None
             save_config(config)
             log_lines = get_bot_logs(bot_name, 5)
             error_info = log_lines[-1] if log_lines else "Bilinmeyen hata"
-            log(bot_name, f"Bot başlatılamadı, çıkış kodu: {poll}")
-            return False, f"Bot başlatılamadı (çıkış kodu: {poll}). Son log: {error_info}"
+            log(bot_name, f"Bot başlatılamadı (process öldü)")
+            return False, f"Bot başlatılamadı. Son log: {error_info}"
 
         bot_info["pid"] = process.pid
         bot_info["status"] = "running"
