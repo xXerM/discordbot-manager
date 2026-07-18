@@ -217,6 +217,9 @@
             border-radius: var(--radius);
             padding: 1.15rem 1.25rem;
             transition: all 0.25s;
+        }
+
+        .bot-card.animate-in {
             animation: fadeUp 0.3s ease;
         }
 
@@ -1021,6 +1024,10 @@
             return mb.toFixed(1) + ' MB';
         }
 
+        function esc(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
         function getSourceBadge(source) {
             if (source === 'imported') return `<span class="source-badge source-imported">${t('sourceImported')}</span>`;
             if (source === 'cloned') return `<span class="source-badge source-imported">${t('sourceCloned')}</span>`;
@@ -1048,6 +1055,8 @@
                 }
             });
         }
+
+        let _initialRender = true;
 
         function renderBots(bots) {
             botsData = bots;
@@ -1080,8 +1089,12 @@
                         </button>
                     </div>
                 `;
+                _initialRender = true;
                 return;
             }
+
+            const animate = _initialRender;
+            _initialRender = false;
 
             let html = '';
             names.forEach(name => {
@@ -1089,8 +1102,9 @@
                 if (!b) return;
                 const status = b.status || 'stopped';
                 const dotClass = status === 'running' ? 'running' : status === 'stopped' ? 'stopped' : 'error';
+                const sName = esc(name);
                 html += `
-                    <div class="bot-card" id="bot-${name}">
+                    <div class="bot-card${animate ? ' animate-in' : ''}" id="bot-${sName}">
                         <div class="bot-header">
                             <div class="bot-header-left">
                                 <span class="bot-status-dot ${dotClass}"></span>
@@ -1110,19 +1124,19 @@
                         </div>
                         <div class="bot-actions">
                             ${status === 'running'
-                                ? `<button class="action-btn warning" onclick="actionBot('${name}', 'restart')"><i class="bi bi-arrow-repeat"></i> ${t('restart')}</button>
-                                   <button class="action-btn danger" onclick="actionBot('${name}', 'stop')"><i class="bi bi-stop-fill"></i> ${t('stop')}</button>`
-                                : `<button class="action-btn success" onclick="actionBot('${name}', 'start')"><i class="bi bi-play-fill"></i> ${t('start')}</button>`
+                                ? `<button class="action-btn warning" onclick="actionBot('${sName}', 'restart')"><i class="bi bi-arrow-repeat"></i> ${t('restart')}</button>
+                                   <button class="action-btn danger" onclick="actionBot('${sName}', 'stop')"><i class="bi bi-stop-fill"></i> ${t('stop')}</button>`
+                                : `<button class="action-btn success" onclick="actionBot('${sName}', 'start')"><i class="bi bi-play-fill"></i> ${t('start')}</button>`
                             }
-                            <button class="action-btn" onclick="showLogs('${name}')"><i class="bi bi-journal-text"></i> ${t('logsBtn')}</button>
-                            <button class="action-btn" onclick="showEdit('${name}')"><i class="bi bi-pencil"></i> ${t('edit')}</button>
-                            <button class="action-btn" onclick="showReplaceFile('${name}')"><i class="bi bi-upload"></i> ${t('replaceFile')}</button>
-                            <button class="action-btn" onclick="showEnv('${name}')"><i class="bi bi-key"></i> ${t('token')}</button>
-                            <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-arrow-up"></i> ${t('gitPush')}</button>
-                            <button class="action-btn" onclick="gitPull('${name}')"><i class="bi bi-arrow-down"></i> ${t('gitPull')}</button>
-                            <button class="action-btn ghost" id="autoGitPullBtn-${name}" onclick="toggleAutoGitPull('${name}')" style="opacity: ${b.auto_git_pull ? '1' : '0.4'}"><i class="bi bi-arrow-repeat"></i> ${t('autoGitPull')}</button>
-                            ${b.token ? `<button class="action-btn info" onclick="addToServer('${name}')"><i class="bi bi-box-arrow-up-right"></i> ${t('addToServer')}</button>` : ''}
-                            <button class="action-btn danger" onclick="deleteBot('${name}')"><i class="bi bi-trash"></i> ${t('delete')}</button>
+                            <button class="action-btn" onclick="showLogs('${sName}')"><i class="bi bi-journal-text"></i> ${t('logsBtn')}</button>
+                            <button class="action-btn" onclick="showEdit('${sName}')"><i class="bi bi-pencil"></i> ${t('edit')}</button>
+                            <button class="action-btn" onclick="showReplaceFile('${sName}')"><i class="bi bi-upload"></i> ${t('replaceFile')}</button>
+                            <button class="action-btn" onclick="showEnv('${sName}')"><i class="bi bi-key"></i> ${t('token')}</button>
+                            <button class="action-btn" onclick="gitPush('${sName}')"><i class="bi bi-arrow-up"></i> ${t('gitPush')}</button>
+                            <button class="action-btn" onclick="gitPull('${sName}')"><i class="bi bi-arrow-down"></i> ${t('gitPull')}</button>
+                            <button class="action-btn ghost" id="autoGitPullBtn-${sName}" onclick="toggleAutoGitPull('${sName}')" style="opacity: ${b.auto_git_pull ? '1' : '0.4'}"><i class="bi bi-arrow-repeat"></i> ${t('autoGitPull')}</button>
+                            ${b.token ? `<button class="action-btn info" onclick="addToServer('${sName}')"><i class="bi bi-box-arrow-up-right"></i> ${t('addToServer')}</button>` : ''}
+                            <button class="action-btn danger" onclick="deleteBot('${sName}')"><i class="bi bi-trash"></i> ${t('delete')}</button>
                         </div>
                     </div>
                 `;
