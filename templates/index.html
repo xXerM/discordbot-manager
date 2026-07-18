@@ -8,214 +8,310 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f0f1a;
-            --bg-card: #1a1a2e;
-            --bg-card-hover: #222244;
-            --accent: #6c5ce7;
-            --accent-glow: rgba(108, 92, 231, 0.15);
-            --text-primary: #e8e8f0;
-            --text-secondary: #8888aa;
-            --border-color: #2a2a4a;
+            --bg-deep: #07070d;
+            --bg-body: #0b0b16;
+            --bg-card: #12121f;
+            --bg-card-hover: #1a1a2e;
+            --accent: #7c5cfc;
+            --accent-soft: rgba(124, 92, 252, 0.12);
+            --accent-glow: rgba(124, 92, 252, 0.2);
+            --text-primary: #eaeaf0;
+            --text-secondary: #6b6b8a;
+            --text-muted: #4a4a66;
+            --border-color: #1e1e36;
+            --border-light: #2a2a4a;
             --success: #00d68f;
-            --danger: #ff6b6b;
+            --success-bg: rgba(0, 214, 143, 0.1);
+            --danger: #ff4757;
+            --danger-bg: rgba(255, 71, 87, 0.1);
             --warning: #ffd93d;
+            --warning-bg: rgba(255, 217, 61, 0.1);
+            --info: #54a0ff;
+            --radius: 14px;
+            --radius-sm: 8px;
+            --shadow: 0 2px 20px rgba(0,0,0,0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: var(--bg-dark);
+            background: var(--bg-body);
             color: var(--text-primary);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             min-height: 100vh;
+            background-image: radial-gradient(ellipse at 50% 0%, rgba(124,92,252,0.04) 0%, transparent 70%);
         }
 
         .navbar {
-            background: var(--bg-card);
+            background: rgba(18, 18, 31, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-color);
-            padding: 0.75rem 0;
+            padding: 0.6rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
         }
 
         .navbar-brand {
             color: var(--accent);
             font-weight: 700;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
         }
 
-        .navbar-brand i { margin-right: 8px; }
+        .navbar-brand .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-soft);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
 
-        .navbar .badge {
-            background: var(--accent);
-            color: white;
+        .container-fluid { max-width: 1440px; }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-actions .badge {
+            background: var(--accent-soft);
+            color: var(--accent);
             font-weight: 500;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid rgba(124,92,252,0.2);
+            font-size: 0.8rem;
         }
-
-        .container-fluid { max-width: 1400px; }
 
         .btn-accent {
             background: var(--accent);
-            color: white;
+            color: #fff;
             border: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: 8px;
+            padding: 0.45rem 1.1rem;
+            border-radius: var(--radius-sm);
             font-weight: 500;
+            font-size: 0.85rem;
             transition: all 0.2s;
         }
 
         .btn-accent:hover {
-            background: #7c6cf7;
-            color: white;
+            background: #8b6fff;
+            color: #fff;
             transform: translateY(-1px);
-            box-shadow: 0 4px 15px var(--accent-glow);
+            box-shadow: 0 4px 16px var(--accent-glow);
         }
 
-        .btn-outline-accent {
+        .btn-ghost {
             background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.45rem 1rem;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--accent);
             color: var(--accent);
-            border: 1px solid var(--accent);
+            background: var(--accent-soft);
         }
-
-        .btn-outline-accent:hover {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.85rem; }
 
         .lang-btn {
             background: transparent;
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            padding: 0.3rem 0.6rem;
+            padding: 0.35rem 0.7rem;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.2s;
+            font-weight: 600;
         }
 
         .lang-btn:hover {
             border-color: var(--accent);
             color: var(--accent);
+            background: var(--accent-soft);
         }
 
         .stats-bar {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
             margin-bottom: 1.5rem;
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
         }
 
         .stat-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
             display: flex;
             align-items: center;
+            gap: 1rem;
+            transition: all 0.2s;
+        }
+
+        .stat-item:hover {
+            border-color: var(--border-light);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-item .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .stat-item .stat-icon.purple { background: var(--accent-soft); color: var(--accent); }
+        .stat-item .stat-icon.green { background: var(--success-bg); color: var(--success); }
+        .stat-item .stat-icon.red { background: var(--danger-bg); color: var(--danger); }
+        .stat-item .stat-icon.yellow { background: var(--warning-bg); color: var(--warning); }
+
+        .stat-item .stat-info .stat-label {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+
+        .stat-item .stat-info .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        #botList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
             gap: 0.75rem;
         }
 
-        .stat-item i {
-            font-size: 1.5rem;
-            color: var(--accent);
-        }
-
-        .stat-item .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-item .stat-value {
-            font-size: 1.1rem;
-            font-weight: 600;
+        @media (max-width: 480px) {
+            #botList { grid-template-columns: 1fr; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .nav-actions .btn span { display: none; }
         }
 
         .bot-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.25rem;
-            transition: all 0.2s;
-            margin-bottom: 1rem;
+            border-radius: var(--radius);
+            padding: 1.15rem 1.25rem;
+            transition: all 0.25s;
+            animation: fadeUp 0.3s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .bot-card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 20px var(--accent-glow);
+            border-color: var(--border-light);
+            box-shadow: var(--shadow);
+            background: var(--bg-card-hover);
         }
 
         .bot-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.8rem;
         }
+
+        .bot-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+        }
+
+        .bot-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .bot-status-dot.running { background: var(--success); box-shadow: 0 0 8px rgba(0,214,143,0.4); }
+        .bot-status-dot.stopped { background: var(--danger); box-shadow: 0 0 8px rgba(255,71,87,0.3); }
+        .bot-status-dot.error { background: var(--warning); box-shadow: 0 0 8px rgba(255,217,61,0.3); }
 
         .bot-name {
-            font-size: 1.15rem;
+            font-size: 1.05rem;
             font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
+        .bot-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
         }
 
-        .status-running {
-            background: rgba(0, 214, 143, 0.1);
-            color: var(--success);
-            border: 1px solid rgba(0, 214, 143, 0.3);
-        }
-
-        .status-stopped {
-            background: rgba(255, 107, 107, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(255, 107, 107, 0.3);
-        }
-
-        .status-error {
-            background: rgba(255, 217, 61, 0.1);
-            color: var(--warning);
-            border: 1px solid rgba(255, 217, 61, 0.3);
-        }
-
-        .bot-metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 0.75rem;
-            margin: 0.75rem 0;
-        }
-
-        .metric {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            padding: 0.5rem 0.75rem;
-            text-align: center;
-        }
-
-        .metric .metric-value {
-            font-size: 1rem;
+        .source-badge {
+            font-size: 0.6rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
             font-weight: 600;
-        }
-
-        .metric .metric-label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
 
-        .bot-actions {
+        .source-template { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(124,92,252,0.25); }
+        .source-imported { background: var(--success-bg); color: var(--success); border: 1px solid rgba(0,214,143,0.25); }
+
+        .bot-meta {
             display: flex;
             gap: 0.4rem;
             flex-wrap: wrap;
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .meta-chip {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .meta-chip i { font-size: 0.7rem; }
+        .meta-chip .chip-value { color: var(--text-primary); font-weight: 500; margin-left: 0.1rem; }
+        .meta-chip .chip-value.green { color: var(--success); }
+        .meta-chip .chip-value.yellow { color: var(--warning); }
+
+        .bot-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            padding-top: 0.7rem;
             border-top: 1px solid var(--border-color);
         }
 
@@ -225,193 +321,231 @@
             color: var(--text-secondary);
             padding: 0.35rem 0.7rem;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
         }
+
+        .action-btn i { font-size: 0.8rem; }
 
         .action-btn:hover {
             border-color: var(--accent);
             color: var(--accent);
-            background: var(--accent-glow);
+            background: var(--accent-soft);
         }
 
-        .action-btn.text-danger:hover {
-            border-color: var(--danger);
-            color: var(--danger);
-            background: rgba(255, 107, 107, 0.1);
-        }
+        .action-btn.primary { border-color: rgba(124,92,252,0.3); color: var(--accent); }
+        .action-btn.primary:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-        .action-btn.text-success:hover {
-            border-color: var(--success);
-            color: var(--success);
-            background: rgba(0, 214, 143, 0.1);
-        }
+        .action-btn.success { color: var(--success); }
+        .action-btn.success:hover { border-color: var(--success); background: var(--success-bg); color: var(--success); }
 
-        .action-btn.text-warning:hover {
-            border-color: var(--warning);
-            color: var(--warning);
-            background: rgba(255, 217, 61, 0.1);
-        }
+        .action-btn.danger { color: var(--danger); }
+        .action-btn.danger:hover { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
+
+        .action-btn.warning { color: var(--warning); }
+        .action-btn.warning:hover { border-color: var(--warning); background: var(--warning-bg); color: var(--warning); }
+
+        .action-btn.info { color: var(--info); }
+        .action-btn.info:hover { border-color: var(--info); background: rgba(84,160,255,0.1); color: var(--info); }
+
+        .action-btn.ghost { opacity: 0.6; }
+        .action-btn.ghost:hover { opacity: 1; }
 
         .modal-content {
             background: var(--bg-card);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
 
         .modal-header {
             border-bottom: 1px solid var(--border-color);
+            padding: 1.1rem 1.25rem;
+        }
+
+        .modal-header .modal-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .modal-footer {
             border-top: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
         }
 
+        .modal-body { padding: 1.25rem; }
+
+        .modal .btn-close { filter: invert(1) brightness(0.4); }
+
         .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.04);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
+            padding: 0.55rem 0.85rem;
+            font-size: 0.9rem;
         }
 
         .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.06);
             border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-glow);
+            box-shadow: 0 0 0 3px var(--accent-soft);
             color: var(--text-primary);
         }
 
-        .form-control::placeholder {
-            color: var(--text-secondary);
-        }
+        .form-control::placeholder { color: var(--text-muted); }
+        .form-label { color: var(--text-secondary); font-size: 0.8rem; font-weight: 500; margin-bottom: 0.35rem; }
 
-        .form-label { color: var(--text-secondary); font-size: 0.85rem; }
-
-        .modal .btn-close {
-            filter: invert(1) brightness(0.5);
-        }
-
-        .log-area {
-            background: rgba(0, 0, 0, 0.3);
+        .form-check-input {
+            background: rgba(255,255,255,0.05);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-            max-height: 400px;
-            overflow-y: auto;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 0.8rem;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            color: var(--text-secondary);
         }
-
-        .code-editor {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            color: var(--text-primary);
-            min-height: 300px;
-            width: 100%;
-            resize: vertical;
-        }
-
-        .toast-container {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            z-index: 1060;
-        }
-
-        .toast {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-secondary);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
+        .form-check-input:checked { background: var(--accent); border-color: var(--accent); }
+        .form-check-input:focus { box-shadow: 0 0 0 3px var(--accent-soft); }
 
         .drop-zone {
             border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 2rem 1rem;
+            border-radius: var(--radius-sm);
+            padding: 1.75rem 1rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
             background: rgba(255,255,255,0.02);
         }
 
-        .drop-zone:hover,
-        .drop-zone.dragover {
+        .drop-zone:hover, .drop-zone.dragover {
             border-color: var(--accent);
-            background: var(--accent-glow);
+            background: var(--accent-soft);
         }
 
-        .drop-zone i {
-            font-size: 2rem;
+        .drop-zone i { font-size: 1.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+        .drop-zone .file-name { font-size: 0.8rem; color: var(--accent); margin-top: 0.4rem; }
+
+        .log-area {
+            background: rgba(0,0,0,0.35);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            max-height: 450px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.78rem;
+            line-height: 1.65;
+            white-space: pre-wrap;
             color: var(--text-secondary);
-            margin-bottom: 0.5rem;
         }
 
-        .drop-zone .file-name {
-            font-size: 0.8rem;
-            color: var(--accent);
-            margin-top: 0.5rem;
+        .code-editor {
+            background: rgba(0,0,0,0.35);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            min-height: 320px;
+            width: 100%;
+            resize: vertical;
         }
 
-        .source-badge {
-            font-size: 0.65rem;
-            padding: 0.15rem 0.5rem;
-            border-radius: 4px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+        .toast-container {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            z-index: 1060;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .source-template {
-            background: rgba(108, 92, 231, 0.15);
-            color: var(--accent);
-            border: 1px solid rgba(108, 92, 231, 0.3);
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: var(--radius-sm);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            min-width: 280px;
+            animation: slideIn 0.25s ease;
         }
 
-        .source-imported {
-            background: rgba(0, 214, 143, 0.1);
-            color: var(--success);
-            border: 1px solid rgba(0, 214, 143, 0.3);
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        ::-webkit-scrollbar { width: 6px; }
+        .toast .toast-body {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 5rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state h5 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .modal-dialog-scrollable .modal-body::-webkit-scrollbar { width: 4px; }
+
+        .btn-secondary-ghost {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.45rem 1.1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary-ghost:hover {
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+        }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="container-fluid">
-            <span class="navbar-brand"><i class="bi bi-robot"></i> Bot Manager</span>
-            <div class="d-flex align-items-center gap-3">
+            <span class="navbar-brand">
+                <span class="brand-icon"><i class="bi bi-robot"></i></span>
+                Bot Manager
+            </span>
+            <div class="nav-actions">
                 <span class="badge" id="botCount">0 bots</span>
                 <button class="lang-btn" id="langToggle" onclick="toggleLang()">TR</button>
-                <button class="btn btn-outline-accent btn-sm" onclick="showImportModal()">
-                    <i class="bi bi-upload"></i> <span data-i18n="importBotBtn">Import Bot</span>
+                <button class="btn-ghost" onclick="showImportModal()">
+                    <i class="bi bi-upload"></i> <span data-i18n="importBotBtn">Import</span>
                 </button>
-                <button class="btn btn-outline-accent btn-sm" onclick="showCloneModal()">
-                    <i class="bi bi-github"></i> <span data-i18n="cloneBtn">Clone from GitHub</span>
+                <button class="btn-ghost" onclick="showCloneModal()">
+                    <i class="bi bi-github"></i> <span data-i18n="cloneBtn">Clone</span>
                 </button>
-                <button class="btn btn-accent btn-sm" onclick="showCreateModal()">
+                <button class="btn-accent" onclick="showCreateModal()">
                     <i class="bi bi-plus-lg"></i> <span data-i18n="newBotBtn">New Bot</span>
                 </button>
             </div>
@@ -421,29 +555,29 @@
     <div class="container-fluid py-3">
         <div class="stats-bar" id="statsBar">
             <div class="stat-item">
-                <i class="bi bi-boxes"></i>
-                <div>
+                <div class="stat-icon purple"><i class="bi bi-boxes"></i></div>
+                <div class="stat-info">
                     <div class="stat-label" data-i18n="totalBots">TOTAL BOTS</div>
                     <div class="stat-value" id="totalBots">0</div>
                 </div>
             </div>
             <div class="stat-item">
-                <i class="bi bi-play-circle" style="color: var(--success);"></i>
-                <div>
+                <div class="stat-icon green"><i class="bi bi-play-circle"></i></div>
+                <div class="stat-info">
                     <div class="stat-label" data-i18n="active">ACTIVE</div>
                     <div class="stat-value" id="activeBots">0</div>
                 </div>
             </div>
             <div class="stat-item">
-                <i class="bi bi-stop-circle" style="color: var(--danger);"></i>
-                <div>
+                <div class="stat-icon red"><i class="bi bi-stop-circle"></i></div>
+                <div class="stat-info">
                     <div class="stat-label" data-i18n="stopped">STOPPED</div>
                     <div class="stat-value" id="stoppedBots">0</div>
                 </div>
             </div>
             <div class="stat-item">
-                <i class="bi bi-memory" style="color: var(--warning);"></i>
-                <div>
+                <div class="stat-icon yellow"><i class="bi bi-memory"></i></div>
+                <div class="stat-info">
                     <div class="stat-label" data-i18n="totalRam">TOTAL RAM</div>
                     <div class="stat-value" id="totalRam">0 MB</div>
                 </div>
@@ -455,11 +589,12 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Create Modal -->
     <div class="modal fade" id="createModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i><span data-i18n="createTitle">Create New Bot</span></h5>
+                    <h5 class="modal-title"><i class="bi bi-plus-circle"></i><span data-i18n="createTitle">Create New Bot</span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -470,26 +605,27 @@
                     <div class="mb-3">
                         <label class="form-label" data-i18n="botToken">Discord Bot Token</label>
                         <input type="password" class="form-control" id="newBotToken" placeholder="MTE4...">
-                        <div class="form-text" style="color: var(--text-secondary); font-size: 0.75rem;" data-i18n="tokenSafe">Your token is safe, stored locally only.</div>
+                        <div class="form-text" style="color: var(--text-muted); font-size: 0.72rem;" data-i18n="tokenSafe">Your token is safe, stored locally only.</div>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="autoStartCheck">
-                        <label class="form-check-label" style="color: var(--text-secondary);" data-i18n="autoStart">Auto start after creation</label>
+                        <label class="form-check-label" style="color: var(--text-secondary); font-size: 0.85rem;" data-i18n="autoStart">Auto start after creation</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn-secondary-ghost" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
                     <button class="btn btn-accent" onclick="createBot()" data-i18n="create">Create</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Clone Modal -->
     <div class="modal fade" id="cloneModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-github me-2"></i><span data-i18n="cloneTitle">Clone from GitHub</span></h5>
+                    <h5 class="modal-title"><i class="bi bi-github"></i><span data-i18n="cloneTitle">Clone from GitHub</span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -507,22 +643,23 @@
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="cloneAutoStart">
-                        <label class="form-check-label" style="color: var(--text-secondary);" data-i18n="autoStart">Auto start after creation</label>
+                        <label class="form-check-label" style="color: var(--text-secondary); font-size: 0.85rem;" data-i18n="autoStart">Auto start after creation</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn-secondary-ghost" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
                     <button class="btn btn-accent" onclick="cloneBot()" data-i18n="cloneBtn">Clone</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Logs Modal -->
     <div class="modal fade" id="logsModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-journal-text me-2"></i><span id="logsModalTitle"></span></h5>
+                    <h5 class="modal-title"><i class="bi bi-journal-text"></i><span id="logsModalTitle"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -532,29 +669,31 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
     <div class="modal fade" id="editModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-code-slash me-2"></i><span id="editModalTitle"></span></h5>
+                    <h5 class="modal-title"><i class="bi bi-code-slash"></i><span id="editModalTitle"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <textarea class="code-editor" id="codeEditor" spellcheck="false"></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn-secondary-ghost" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
                     <button class="btn btn-accent" onclick="saveEdit()" data-i18n="save">Save</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Import Modal -->
     <div class="modal fade" id="importModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-upload me-2"></i><span data-i18n="importTitle">Import Bot</span></h5>
+                    <h5 class="modal-title"><i class="bi bi-upload"></i><span data-i18n="importTitle">Import Bot</span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -585,18 +724,19 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn-secondary-ghost" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
                     <button class="btn btn-accent" onclick="importBot()" data-i18n="importBtn">Import</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Replace File Modal -->
     <div class="modal fade" id="replaceFileModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-arrow-repeat me-2"></i><span id="replaceModalTitle"></span></h5>
+                    <h5 class="modal-title"><i class="bi bi-arrow-repeat"></i><span id="replaceModalTitle"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -623,18 +763,19 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn-secondary-ghost" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
                     <button class="btn btn-accent" onclick="replaceBotFile()" data-i18n="replaceBtn">Replace</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Token Modal -->
     <div class="modal fade" id="envModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-key me-2"></i><span id="envModalTitle"></span></h5>
+                    <h5 class="modal-title"><i class="bi bi-key"></i><span id="envModalTitle"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -644,7 +785,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn-secondary-ghost" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
                     <button class="btn btn-accent" onclick="saveEnv()" data-i18n="save">Save</button>
                 </div>
             </div>
@@ -684,17 +825,17 @@
                 logsBtn: 'Logs',
                 edit: 'Edit',
                 token: 'Token',
-                gitPush: 'Git Push',
-                addToServer: 'Add to Server',
-                gitPull: 'Git Pull',
+                gitPush: 'Push',
+                addToServer: 'Invite',
+                gitPull: 'Pull',
                 delete: 'Delete',
-                importBotBtn: 'Import Bot',
+                importBotBtn: 'Import',
                 importTitle: 'Import Bot',
                 importBotFile: 'Bot Python File (.py)',
                 importReqFile: 'Requirements File (optional, .txt)',
                 importBtn: 'Import',
                 replaceBtn: 'Replace',
-                replaceFile: 'Replace File',
+                replaceFile: 'Replace',
                 dropHere: 'Drop .py file here or click to browse',
                 dropHereReq: 'Drop .txt or click to browse',
                 botTokenOptional: 'Discord Bot Token (optional)',
@@ -720,83 +861,85 @@
                 min: 'm',
                 sec: 's',
                 pid: 'PID',
-                cloneBtn: 'Clone from GitHub',
+                cloneBtn: 'Clone',
                 cloneTitle: 'Clone from GitHub',
                 repoUrl: 'GitHub Repository URL',
-                autoGitPull: 'Auto Git Pull',
+                autoGitPull: 'Auto Pull',
                 sourceCloned: 'CLONED',
+                pidLabel: 'PID',
             },
             tr: {
                 newBotBtn: 'Yeni Bot',
                 totalBots: 'TOPLAM BOT',
-                active: 'AKTİF',
+                active: 'AKT\u0130F',
                 stopped: 'DURDURULDU',
                 totalRam: 'TOPLAM RAM',
-                createTitle: 'Yeni Bot Oluştur',
-                botName: 'Bot Adı',
+                createTitle: 'Yeni Bot Olu\u015ftur',
+                botName: 'Bot Ad\u0131',
                 botToken: 'Discord Bot Tokeni',
-                tokenSafe: 'Tokeniniz güvende, sadece yerel olarak saklanır.',
-                autoStart: 'Oluşturulduktan sonra otomatik başlat',
-                cancel: 'İptal',
-                create: 'Oluştur',
+                tokenSafe: 'Tokeniniz g\u00fcvende, sadece yerel olarak saklan\u0131r.',
+                autoStart: 'Olu\u015fturulduktan sonra otomatik ba\u015flat',
+                cancel: '\u0130ptal',
+                create: 'Olu\u015ftur',
                 save: 'Kaydet',
                 logs: 'Loglar',
-                editCode: 'Kod Düzenle',
-                editToken: 'Token Düzenle',
-                loading: 'Yükleniyor...',
+                editCode: 'Kod D\u00fczenle',
+                editToken: 'Token D\u00fczenle',
+                loading: 'Y\u00fckleniyor...',
                 noLogs: '(log yok)',
-                failedLoadLogs: 'Loglar yüklenemedi',
-                failedLoadCode: 'Kod yüklenemedi',
-                running: 'Çalışıyor',
+                failedLoadLogs: 'Loglar y\u00fcklenemedi',
+                failedLoadCode: 'Kod y\u00fcklenemedi',
+                running: '\u00c7al\u0131\u015f\u0131yor',
                 stopped_status: 'Durduruldu',
                 error: 'Hata',
-                restart: 'Yeniden Başlat',
+                restart: 'Yeniden Ba\u015flat',
                 stop: 'Durdur',
-                start: 'Başlat',
+                start: 'Ba\u015flat',
                 logsBtn: 'Loglar',
-                edit: 'Düzenle',
+                edit: 'D\u00fczenle',
                 token: 'Token',
-                gitPush: 'Git Push',
-                addToServer: 'Sunucuya Ekle',
-                gitPull: 'Git Pull',
+                gitPush: 'Push',
+                addToServer: 'Davet',
+                gitPull: 'Pull',
                 delete: 'Sil',
-                importBotBtn: 'Bot İçe Aktar',
-                importTitle: 'Bot İçe Aktar',
-                importBotFile: 'Bot Python Dosyası (.py)',
-                importReqFile: 'Requirements Dosyası (opsiyonel, .txt)',
-                importBtn: 'İçe Aktar',
-                replaceBtn: 'Değiştir',
-                replaceFile: 'Dosya Değiştir',
-                dropHere: '.py dosyasını buraya bırakın veya tıklayın',
-                dropHereReq: '.txt dosyasını buraya bırakın veya tıklayın',
+                importBotBtn: '\u0130\u00e7e Aktar',
+                importTitle: 'Bot \u0130\u00e7e Aktar',
+                importBotFile: 'Bot Python Dosyas\u0131 (.py)',
+                importReqFile: 'Requirements Dosyas\u0131 (opsiyonel, .txt)',
+                importBtn: '\u0130\u00e7e Aktar',
+                replaceBtn: 'De\u011fi\u015ftir',
+                replaceFile: 'De\u011fi\u015ftir',
+                dropHere: '.py dosyas\u0131n\u0131 buraya b\u0131rak\u0131n veya t\u0131klay\u0131n',
+                dropHereReq: '.txt dosyas\u0131n\u0131 buraya b\u0131rak\u0131n veya t\u0131klay\u0131n',
                 botTokenOptional: 'Discord Bot Tokeni (opsiyonel)',
-                sourceTemplate: 'ŞABLON',
-                sourceImported: 'İÇE AKTARILDI',
+                sourceTemplate: '\u015eABLON',
+                sourceImported: '\u0130\u00c7E AKTARILDI',
                 ram: 'RAM',
                 cpu: 'CPU',
                 storage: 'DEPOLAMA',
-                uptime: 'AKTİF SÜRESİ',
-                noBots: 'Henüz bot bulunmuyor',
-                noBotsDesc: 'Yeni bir bot oluşturarak başlayın.',
-                createFirst: 'İlk Botu Oluştur',
-                failedLoadBots: 'Botlar yüklenirken hata oluştu',
-                actionFailed: 'İşlem başarısız',
-                nameTokenRequired: 'İsim ve token gerekli',
-                failedCreateBot: 'Bot oluşturulamadı',
+                uptime: 'AKT\u0130F S\u00dcRES\u0130',
+                noBots: 'Hen\u00fcz bot bulunmuyor',
+                noBotsDesc: 'Yeni bir bot olu\u015fturarak ba\u015flay\u0131n.',
+                createFirst: '\u0130lk Botu Olu\u015ftur',
+                failedLoadBots: 'Botlar y\u00fcklenirken hata olu\u015ftu',
+                actionFailed: '\u0130\u015flem ba\u015far\u0131s\u0131z',
+                nameTokenRequired: '\u0130sim ve token gerekli',
+                failedCreateBot: 'Bot olu\u015fturulamad\u0131',
                 tokenRequired: 'Token gerekli',
-                commitMsg: 'Commit mesajı (opsiyonel):',
-                confirmDelete: '"{name}" botunu silmek istediğinize emin misiniz?',
+                commitMsg: 'Commit mesaj\u0131 (opsiyonel):',
+                confirmDelete: '"{name}" botunu silmek istedi\u011finize emin misiniz?',
                 botCount: '{n} bot',
                 day: 'g',
                 hour: 's',
                 min: 'd',
                 sec: 'sn',
                 pid: 'PID',
-                cloneBtn: 'GitHub\'dan Klonla',
+                cloneBtn: 'Klonla',
                 cloneTitle: 'GitHub\'dan Klonla',
                 repoUrl: 'GitHub Depo URL\'si',
-                autoGitPull: 'Otomatik Git Güncelleme',
+                autoGitPull: 'Oto Pull',
                 sourceCloned: 'KLONLANDI',
+                pidLabel: 'PID',
             }
         };
 
@@ -872,6 +1015,12 @@
             return parts.join(' ');
         }
 
+        function formatBytes(mb) {
+            if (mb == null) return '-';
+            if (mb < 1) return (mb * 1024).toFixed(0) + ' KB';
+            return mb.toFixed(1) + ' MB';
+        }
+
         function getSourceBadge(source) {
             if (source === 'imported') return `<span class="source-badge source-imported">${t('sourceImported')}</span>`;
             if (source === 'cloned') return `<span class="source-badge source-imported">${t('sourceCloned')}</span>`;
@@ -894,15 +1043,10 @@
                 zone.classList.remove('dragover');
                 if (e.dataTransfer.files.length) {
                     input.files = e.dataTransfer.files;
-                    updateFileName(input, zoneId === 'importDropZone' ? 'importFileName' : zoneId === 'replaceDropZone' ? 'replaceFileName' : 'reqFileName');
+                    const map = { importDropZone: 'importFileName', replaceDropZone: 'replaceFileName', reqDropZone: 'reqFileName' };
+                    updateFileName(input, map[zoneId] || 'fileName');
                 }
             });
-        }
-
-        function getStatusBadge(status) {
-            if (status === 'running') return `<span class="status-badge status-running"><i class="bi bi-play-fill"></i> ${t('running')}</span>`;
-            if (status === 'stopped') return `<span class="status-badge status-stopped"><i class="bi bi-stop-fill"></i> ${t('stopped_status')}</span>`;
-            return `<span class="status-badge status-error"><i class="bi bi-exclamation-triangle"></i> ${t('error')}</span>`;
         }
 
         function renderBots(bots) {
@@ -928,7 +1072,7 @@
             if (names.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="bi bi-robot text-secondary"></i>
+                        <i class="bi bi-robot"></i>
                         <h5>${t('noBots')}</h5>
                         <p class="text-secondary">${t('noBotsDesc')}</p>
                         <button class="btn btn-accent" onclick="showCreateModal()">
@@ -944,49 +1088,41 @@
                 const b = bots[name];
                 if (!b) return;
                 const status = b.status || 'stopped';
+                const dotClass = status === 'running' ? 'running' : status === 'stopped' ? 'stopped' : 'error';
                 html += `
                     <div class="bot-card" id="bot-${name}">
                         <div class="bot-header">
-                            <div class="d-flex align-items-center gap-2">
+                            <div class="bot-header-left">
+                                <span class="bot-status-dot ${dotClass}"></span>
                                 <span class="bot-name">${name}</span>
                                 ${getSourceBadge(b.source)}
-                                ${getStatusBadge(status)}
                             </div>
-                            <small class="text-secondary" style="font-size: 0.75rem;">${t('pid')}: ${b.pid || '-'}</small>
+                            <div class="bot-header-right">
+                                <small style="color: var(--text-muted); font-size: 0.7rem;">${t('pidLabel')}: ${b.pid || '-'}</small>
+                            </div>
                         </div>
-                        <div class="bot-metrics">
-                            <div class="metric">
-                                <div class="metric-value" style="color: var(--success);">${b.memory_mb ? b.memory_mb.toFixed(1) + ' MB' : '-'}</div>
-                                <div class="metric-label">${t('ram')}</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">${b.cpu_percent ? b.cpu_percent.toFixed(1) + '%' : '-'}</div>
-                                <div class="metric-label">${t('cpu')}</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">${b.storage_mb ? b.storage_mb.toFixed(1) + ' MB' : '-'}</div>
-                                <div class="metric-label">${t('storage')}</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">${formatUptime(b.uptime_seconds)}</div>
-                                <div class="metric-label">${t('uptime')}</div>
-                            </div>
+                        <div class="bot-meta">
+                            <span class="meta-chip"><i class="bi bi-memory"></i> ${t('ram')} <span class="chip-value ${status === 'running' ? 'green' : ''}">${formatBytes(b.memory_mb)}</span></span>
+                            <span class="meta-chip"><i class="bi bi-cpu"></i> ${t('cpu')} <span class="chip-value">${b.cpu_percent != null ? b.cpu_percent.toFixed(1) + '%' : '-'}</span></span>
+                            <span class="meta-chip"><i class="bi bi-hdd"></i> ${t('storage')} <span class="chip-value">${formatBytes(b.storage_mb)}</span></span>
+                            <span class="meta-chip"><i class="bi bi-clock-history"></i> ${t('uptime')} <span class="chip-value">${formatUptime(b.uptime_seconds)}</span></span>
+                            <span class="meta-chip"><i class="bi bi-tag"></i> ${t('status').toUpperCase()} <span class="chip-value ${status === 'running' ? 'green' : status === 'stopped' ? '' : 'yellow'}">${status === 'running' ? t('running') : status === 'stopped' ? t('stopped_status') : t('error')}</span></span>
                         </div>
                         <div class="bot-actions">
                             ${status === 'running'
-                                ? `<button class="action-btn text-warning" onclick="actionBot('${name}', 'restart')"><i class="bi bi-arrow-repeat"></i> ${t('restart')}</button>
-                                   <button class="action-btn text-danger" onclick="actionBot('${name}', 'stop')"><i class="bi bi-stop-fill"></i> ${t('stop')}</button>`
-                                : `<button class="action-btn text-success" onclick="actionBot('${name}', 'start')"><i class="bi bi-play-fill"></i> ${t('start')}</button>`
+                                ? `<button class="action-btn warning" onclick="actionBot('${name}', 'restart')"><i class="bi bi-arrow-repeat"></i> ${t('restart')}</button>
+                                   <button class="action-btn danger" onclick="actionBot('${name}', 'stop')"><i class="bi bi-stop-fill"></i> ${t('stop')}</button>`
+                                : `<button class="action-btn success" onclick="actionBot('${name}', 'start')"><i class="bi bi-play-fill"></i> ${t('start')}</button>`
                             }
                             <button class="action-btn" onclick="showLogs('${name}')"><i class="bi bi-journal-text"></i> ${t('logsBtn')}</button>
                             <button class="action-btn" onclick="showEdit('${name}')"><i class="bi bi-pencil"></i> ${t('edit')}</button>
                             <button class="action-btn" onclick="showReplaceFile('${name}')"><i class="bi bi-upload"></i> ${t('replaceFile')}</button>
-                            ${b.token ? `<button class="action-btn text-info" onclick="addToServer('${name}')"><i class="bi bi-box-arrow-up-right"></i> ${t('addToServer')}</button>` : ''}
                             <button class="action-btn" onclick="showEnv('${name}')"><i class="bi bi-key"></i> ${t('token')}</button>
                             <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-arrow-up"></i> ${t('gitPush')}</button>
                             <button class="action-btn" onclick="gitPull('${name}')"><i class="bi bi-arrow-down"></i> ${t('gitPull')}</button>
-                            <button class="action-btn" id="autoGitPullBtn-${name}" onclick="toggleAutoGitPull('${name}')" style="opacity: ${b.auto_git_pull ? '1' : '0.5'}"><i class="bi bi-arrow-repeat"></i> ${t('autoGitPull')}</button>
-                            <button class="action-btn text-danger" onclick="deleteBot('${name}')"><i class="bi bi-trash"></i> ${t('delete')}</button>
+                            <button class="action-btn ghost" id="autoGitPullBtn-${name}" onclick="toggleAutoGitPull('${name}')" style="opacity: ${b.auto_git_pull ? '1' : '0.4'}"><i class="bi bi-arrow-repeat"></i> ${t('autoGitPull')}</button>
+                            ${b.token ? `<button class="action-btn info" onclick="addToServer('${name}')"><i class="bi bi-box-arrow-up-right"></i> ${t('addToServer')}</button>` : ''}
+                            <button class="action-btn danger" onclick="deleteBot('${name}')"><i class="bi bi-trash"></i> ${t('delete')}</button>
                         </div>
                     </div>
                 `;
@@ -1252,7 +1388,7 @@
             const autoStart = document.getElementById('cloneAutoStart').checked;
 
             if (!name || !repoUrl) {
-                showToast('Bot adı ve repo URL\'si gerekli', 'error');
+                showToast('Bot ad\u0131 ve repo URL\'si gerekli', 'error');
                 return;
             }
 
