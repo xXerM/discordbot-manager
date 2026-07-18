@@ -49,11 +49,11 @@ def log(bot_name, message):
 
 def create_bot(name, token):
     if not TEMPLATE_FILE.exists():
-        return False, "template-bot.py bulunamadı"
+        return False, "template-bot.py not found"
 
     bot_dir = BOTS_DIR / name
     if bot_dir.exists():
-        return False, f"'{name}' adında bir bot zaten var"
+        return False, f"'{name}' already exists"
 
     bot_dir.mkdir(parents=True, exist_ok=True)
     dest = bot_dir / "bot.py"
@@ -78,46 +78,46 @@ def create_bot(name, token):
     }
     save_config(config)
 
-    log(name, "Bot oluşturuldu")
-    return True, "Bot başarıyla oluşturuldu"
+    log(name, "Bot created")
+    return True, "Bot created successfully"
 
 
 def install_deps(bot_name):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
     bot_dir = Path(config["bots"][bot_name]["directory"])
     req_file = bot_dir / "requirements.txt"
     if not req_file.exists():
-        return False, "requirements.txt bulunamadı"
+        return False, "requirements.txt not found"
     try:
         cmd = [sys.executable, "-m", "pip", "install", "-r", str(req_file)]
         try:
             result = subprocess.run(cmd, cwd=str(bot_dir), check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError:
             result = subprocess.run(cmd + ["--break-system-packages"], cwd=str(bot_dir), check=True, capture_output=True, text=True)
-        log(bot_name, "Bağımlılıklar kuruldu")
-        return True, "Bağımlılıklar başarıyla kuruldu"
+        log(bot_name, "Dependencies installed")
+        return True, "Dependencies installed successfully"
     except subprocess.CalledProcessError as e:
-        return False, f"Kurulum hatası: {e.stderr}"
+        return False, f"Installation error: {e.stderr}"
 
 
 def start_bot(bot_name):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
 
     bot_info = config["bots"][bot_name]
     if bot_info["status"] == "running":
-        return False, "Bot zaten çalışıyor"
+        return False, "Bot is already running"
 
     bot_dir = Path(bot_info["directory"])
     bot_script = bot_dir / "bot.py"
     if not bot_script.exists():
-        return False, "bot.py bulunamadı"
+        return False, "bot.py not found"
 
     if not bot_info.get("token"):
-        return False, "Bot tokeni bulunamadı"
+        return False, "Bot token not found"
 
     env = os.environ.copy()
     env["DISCORD_TOKEN"] = bot_info["token"]
@@ -129,7 +129,7 @@ def start_bot(bot_name):
     log_path = get_log_path(bot_name)
     try:
         with open(log_path, "a") as log_file:
-            log_file.write(f"\n--- Bot başlatılıyor: {datetime.now().isoformat()} ---\n")
+            log_file.write(f"\n--- Bot starting: {datetime.now().isoformat()} ---\n")
             log_file.flush()
             process = subprocess.Popen(
                 [sys.executable, str(bot_script)],
@@ -155,28 +155,28 @@ def start_bot(bot_name):
             bot_info["pid"] = None
             save_config(config)
             log_lines = get_bot_logs(bot_name, 5)
-            error_info = log_lines[-1] if log_lines else "Bilinmeyen hata"
-            log(bot_name, f"Bot başlatılamadı (process öldü)")
-            return False, f"Bot başlatılamadı. Son log: {error_info}"
+            error_info = log_lines[-1] if log_lines else "Unknown error"
+            log(bot_name, f"Bot failed to start (process died)")
+            return False, f"Bot failed to start. Last log: {error_info}"
 
         bot_info["pid"] = process.pid
         bot_info["status"] = "running"
         save_config(config)
 
-        log(bot_name, f"Bot başlatıldı (PID: {process.pid})")
-        return True, f"Bot başlatıldı (PID: {process.pid})"
+        log(bot_name, f"Bot started (PID: {process.pid})")
+        return True, f"Bot started (PID: {process.pid})"
     except Exception as e:
-        return False, f"Başlatma hatası: {str(e)}"
+        return False, f"Start error: {str(e)}"
 
 
 def stop_bot(bot_name):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
 
     bot_info = config["bots"][bot_name]
     if bot_info["status"] != "running" or not bot_info["pid"]:
-        return False, "Bot zaten çalışmıyor"
+        return False, "Bot is not running"
 
     pid = bot_info["pid"]
     try:
@@ -195,8 +195,8 @@ def stop_bot(bot_name):
     bot_info["status"] = "stopped"
     bot_info["pid"] = None
     save_config(config)
-    log(bot_name, "Bot durduruldu")
-    return True, "Bot durduruldu"
+    log(bot_name, "Bot stopped")
+    return True, "Bot stopped"
 
 
 def restart_bot(bot_name):
@@ -208,7 +208,7 @@ def restart_bot(bot_name):
 def delete_bot(bot_name):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
 
     if config["bots"][bot_name]["status"] == "running":
         stop_bot(bot_name)
@@ -224,14 +224,14 @@ def delete_bot(bot_name):
     if log_path.exists():
         log_path.unlink()
 
-    log(bot_name, "Bot silindi")
-    return True, "Bot silindi"
+    log(bot_name, "Bot deleted")
+    return True, "Bot deleted"
 
 
 def git_push(bot_name, commit_message=None):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
 
     bot_dir = Path(config["bots"][bot_name]["directory"])
     if not (bot_dir / ".git").exists():
@@ -239,25 +239,25 @@ def git_push(bot_name, commit_message=None):
 
     try:
         subprocess.run(["git", "add", "."], cwd=str(bot_dir), check=True, capture_output=True)
-        msg = commit_message or f"Bot güncelleme: {datetime.now().isoformat()}"
+        msg = commit_message or f"Bot update: {datetime.now().isoformat()}"
         subprocess.run(["git", "commit", "-m", msg], cwd=str(bot_dir), check=False, capture_output=True)
         result = subprocess.run(["git", "push"], cwd=str(bot_dir), capture_output=True, text=True)
         if result.returncode != 0:
-            return False, f"Push hatası: {result.stderr}"
-        log(bot_name, "Git push yapıldı")
-        return True, "Git push başarılı"
+            return False, f"Push error: {result.stderr}"
+        log(bot_name, "Git push completed")
+        return True, "Git push successful"
     except subprocess.CalledProcessError as e:
-        return False, f"Git hatası: {e.stderr.decode() if e.stderr else str(e)}"
+        return False, f"Git error: {e.stderr.decode() if e.stderr else str(e)}"
 
 
 def git_pull(bot_name, remote="origin", branch=None):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
 
     bot_dir = Path(config["bots"][bot_name]["directory"])
     if not (bot_dir / ".git").exists():
-        return False, "Bu bot için git deposu bulunamadı"
+        return False, "No git repository found for this bot"
 
     try:
         if branch:
@@ -265,13 +265,13 @@ def git_pull(bot_name, remote="origin", branch=None):
         else:
             result = subprocess.run(["git", "pull", remote], cwd=str(bot_dir), capture_output=True, text=True)
         if result.returncode != 0:
-            return False, f"Pull hatası: {result.stderr}"
-        log(bot_name, "Git pull yapıldı")
+            return False, f"Pull error: {result.stderr}"
+        log(bot_name, "Git pull completed")
         if "Already up to date" in result.stdout:
-            return True, "Bot zaten güncel"
-        return True, "Bot başarıyla güncellendi"
+            return True, "Bot is already up to date"
+        return True, "Bot updated successfully"
     except subprocess.CalledProcessError as e:
-        return False, f"Git hatası: {e.stderr.decode() if e.stderr else str(e)}"
+        return False, f"Git error: {e.stderr.decode() if e.stderr else str(e)}"
 
 
 def get_bot_status(bot_name):
@@ -341,16 +341,16 @@ def get_all_bots_status():
 def edit_bot_file(bot_name, content=None):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
 
     bot_file = Path(config["bots"][bot_name]["directory"]) / "bot.py"
     if not bot_file.exists():
-        return False, "bot.py bulunamadı"
+        return False, "bot.py not found"
 
     if content is not None:
         bot_file.write_text(content, encoding="utf-8")
-        log(bot_name, "Bot dosyası düzenlendi")
-        return True, "Bot dosyası güncellendi"
+        log(bot_name, "Bot file edited")
+        return True, "Bot file updated"
 
     return True, bot_file.read_text(encoding="utf-8")
 
@@ -358,7 +358,7 @@ def edit_bot_file(bot_name, content=None):
 def replace_bot_file(bot_name, bot_code, requirements_content=None, token=None):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
 
     bot_dir = Path(config["bots"][bot_name]["directory"])
     (bot_dir / "bot.py").write_text(bot_code, encoding="utf-8")
@@ -371,8 +371,8 @@ def replace_bot_file(bot_name, bot_code, requirements_content=None, token=None):
         (bot_dir / "requirements.txt").write_text(requirements_content, encoding="utf-8")
 
     save_config(config)
-    log(bot_name, "Bot dosyası değiştirildi")
-    return True, "Bot dosyası başarıyla güncellendi"
+    log(bot_name, "Bot file replaced")
+    return True, "Bot file updated successfully"
 
 
 def get_bot_logs(bot_name, lines=50):
@@ -407,9 +407,9 @@ def monitor_loop(interval=5):
                         info["status"] = "stopped"
                         info["pid"] = None
                         changed = True
-                        log(name, "Bot beklenmedik şekilde durdu")
+                        log(name, "Bot stopped unexpectedly")
                         if info.get("auto_restart"):
-                            log(name, "Otomatik yeniden başlatılıyor...")
+                            log(name, "Auto-restarting...")
                             save_config(config)
                             start_bot(name)
 
@@ -419,7 +419,7 @@ def monitor_loop(interval=5):
                     if info.get("auto_git_pull"):
                         behind, _ = check_git_updates(name) or (0, "")
                         if behind and behind > 0:
-                            log(name, f"Git güncellemesi bulundu ({behind} commit), güncelleniyor...")
+                            log(name, f"Git update found ({behind} commit(s)), updating...")
                             auto_pull_restart(name)
             if changed:
                 save_config(config)
@@ -429,11 +429,11 @@ def monitor_loop(interval=5):
 
 def import_bot(name, bot_code, token=None, requirements_content=None):
     if not bot_code:
-        return False, "Bot kodu gerekli"
+        return False, "Bot code is required"
 
     bot_dir = BOTS_DIR / name
     if bot_dir.exists():
-        return False, f"'{name}' adında bir bot zaten var"
+        return False, f"'{name}' already exists"
 
     bot_dir.mkdir(parents=True, exist_ok=True)
     (bot_dir / "bot.py").write_text(bot_code, encoding="utf-8")
@@ -459,19 +459,19 @@ def import_bot(name, bot_code, token=None, requirements_content=None):
     }
     save_config(config)
 
-    log(name, "Bot dosyadan içe aktarıldı")
-    return True, "Bot başarıyla içe aktarıldı"
+    log(name, "Bot imported from file")
+    return True, "Bot imported successfully"
 
 
 def clone_bot(name, repo_url, token=None):
     bot_dir = BOTS_DIR / name
     if bot_dir.exists():
-        return False, f"'{name}' adında bir bot zaten var"
+        return False, f"'{name}' already exists"
 
     try:
         subprocess.run(["git", "clone", repo_url, str(bot_dir)], check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as e:
-        return False, f"Git clone hatası: {e.stderr}"
+        return False, f"Git clone error: {e.stderr}"
 
     bot_file = bot_dir / "bot.py"
     if not bot_file.exists():
@@ -483,18 +483,18 @@ def clone_bot(name, repo_url, token=None):
             )]
         if len(py_files) == 0:
             shutil.rmtree(bot_dir)
-            return False, "Depoda hiç .py dosyası bulunamadı"
+            return False, "No .py files found in repository"
         if len(py_files) > 1:
             found = ", ".join(str(f.relative_to(bot_dir)) for f in py_files[:10])
             if len(py_files) > 10:
-                found += f" ve {len(py_files) - 10} dosya daha"
-            return False, f"Depoda birden fazla .py dosyası bulundu ({found}). Ana bot dosyası bot.py olarak adlandırılmalıdır (silme işlemi yapılmadı)."
+                found += f" and {len(py_files) - 10} more"
+            return False, f"Multiple .py files found in repository ({found}). The main bot file should be named bot.py (directory was NOT deleted)."
         src = py_files[0]
         if src.parent == bot_dir:
             src.rename(bot_file)
         else:
             shutil.copy2(str(src), str(bot_file))
-        log(name, f"{src.relative_to(bot_dir)} -> bot.py olarak kullanılıyor")
+        log(name, f"{src.relative_to(bot_dir)} -> using as bot.py")
 
     if token:
         (bot_dir / ".env").write_text(f"DISCORD_TOKEN={token}\n")
@@ -516,29 +516,29 @@ def clone_bot(name, repo_url, token=None):
     }
     save_config(config)
 
-    log(name, "Bot GitHub'dan klonlandı")
-    return True, "Bot başarıyla klonlandı"
+    log(name, "Bot cloned from GitHub")
+    return True, "Bot cloned successfully"
 
 
 def set_auto_git_pull(bot_name, enabled):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
     config["bots"][bot_name]["auto_git_pull"] = enabled
     save_config(config)
-    status = "açık" if enabled else "kapalı"
-    log(bot_name, f"Otomatik git güncelleme {status}")
-    return True, f"Otomatik git güncelleme {status}"
+    status = "enabled" if enabled else "disabled"
+    log(bot_name, f"Auto git pull {status}")
+    return True, f"Auto git pull {status}"
 
 
 def check_git_updates(bot_name):
     config = load_config()
     if bot_name not in config["bots"]:
-        return None, "Bot bulunamadı"
+        return None, "Bot not found"
 
     bot_dir = Path(config["bots"][bot_name]["directory"])
     if not (bot_dir / ".git").exists():
-        return None, "Git deposu bulunamadı"
+        return None, "Git repository not found"
 
     try:
         subprocess.run(["git", "fetch"], cwd=str(bot_dir), capture_output=True, text=True)
@@ -548,8 +548,8 @@ def check_git_updates(bot_name):
         )
         behind = int(result.stdout.strip() or 0)
         if behind > 0:
-            return behind, f"{behind} yeni commit var"
-        return 0, "Güncel"
+            return behind, f"{behind} new commit(s) available"
+        return 0, "Up to date"
     except Exception as e:
         return None, str(e)
 
@@ -557,7 +557,7 @@ def check_git_updates(bot_name):
 def auto_pull_restart(bot_name):
     config = load_config()
     if bot_name not in config["bots"]:
-        return False, "Bot bulunamadı"
+        return False, "Bot not found"
 
     bot_dir = Path(config["bots"][bot_name]["directory"])
     was_running = (config["bots"][bot_name]["status"] == "running")
@@ -568,9 +568,9 @@ def auto_pull_restart(bot_name):
     try:
         result = subprocess.run(["git", "pull"], cwd=str(bot_dir), capture_output=True, text=True)
         if result.returncode != 0:
-            log(bot_name, f"Git pull hatası: {result.stderr}")
-            return False, f"Git pull hatası: {result.stderr}"
-        log(bot_name, "Otomatik git pull yapıldı")
+            log(bot_name, f"Git pull error: {result.stderr}")
+            return False, f"Git pull error: {result.stderr}"
+        log(bot_name, "Auto git pull completed")
     except Exception as e:
         return False, str(e)
 
@@ -580,7 +580,7 @@ def auto_pull_restart(bot_name):
     if was_running:
         start_bot(bot_name)
 
-    return True, "Bot güncellendi ve yeniden başlatıldı"
+    return True, "Bot updated and restarted"
 
 
 def get_bot_invite_url(bot_name):
@@ -588,15 +588,15 @@ def get_bot_invite_url(bot_name):
 
     config = load_config()
     if bot_name not in config["bots"]:
-        return None, "Bot bulunamadı"
+        return None, "Bot not found"
 
     token = config["bots"][bot_name].get("token", "")
     if not token:
-        return None, "Bot tokeni bulunamadı"
+        return None, "Bot token not found"
 
     parts = token.split(".")
     if len(parts) < 2:
-        return None, "Geçersiz token formatı"
+        return None, "Invalid token format"
 
     raw_id = parts[0]
     try:

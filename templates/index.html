@@ -854,6 +854,7 @@
                 failedLoadBots: 'Failed to load bots',
                 actionFailed: 'Action failed',
                 nameTokenRequired: 'Name and token required',
+                nameAndRepoRequired: 'Name and repo URL required',
                 failedCreateBot: 'Failed to create bot',
                 tokenRequired: 'Token required',
                 commitMsg: 'Commit message (optional):',
@@ -927,6 +928,7 @@
                 failedLoadBots: 'Botlar y\u00fcklenirken hata olu\u015ftu',
                 actionFailed: '\u0130\u015flem ba\u015far\u0131s\u0131z',
                 nameTokenRequired: '\u0130sim ve token gerekli',
+                nameAndRepoRequired: '\u0130sim ve repo URL\'si gerekli',
                 failedCreateBot: 'Bot olu\u015fturulamad\u0131',
                 tokenRequired: 'Token gerekli',
                 commitMsg: 'Commit mesaj\u0131 (opsiyonel):',
@@ -1402,7 +1404,7 @@
             const autoStart = document.getElementById('cloneAutoStart').checked;
 
             if (!name || !repoUrl) {
-                showToast('Bot ad\u0131 ve repo URL\'si gerekli', 'error');
+                showToast(t('nameAndRepoRequired'), 'error');
                 return;
             }
 

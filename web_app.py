@@ -29,7 +29,7 @@ def api_list_bots():
 def api_get_bot(name):
     data = get_bot_status(name)
     if data is None:
-        return jsonify({"error": "Bot bulunamadı"}), 404
+        return jsonify({"error": "Bot not found"}), 404
     return jsonify(data)
 
 
@@ -39,7 +39,7 @@ def api_create_bot():
     name = data.get("name", "").strip()
     token = data.get("token", "").strip()
     if not name or not token:
-        return jsonify({"error": "İsim ve token gerekli"}), 400
+        return jsonify({"error": "Name and token required"}), 400
     ok, msg = create_bot(name, token)
     if ok:
         install_deps(name)
@@ -79,7 +79,7 @@ def api_replace_bot_file(name):
     token = request.form.get("token", "").strip()
 
     if not bot_file:
-        return jsonify({"error": "Bot Python dosyası gerekli"}), 400
+        return jsonify({"error": "Bot Python file required"}), 400
 
     bot_code = bot_file.read().decode("utf-8")
     req_content = None
@@ -134,7 +134,7 @@ def api_env(name):
     from pathlib import Path
     config = load_config()
     if name not in config["bots"]:
-        return jsonify({"error": "Bot bulunamadı"}), 404
+        return jsonify({"error": "Bot not found"}), 404
     env_file = Path(config["bots"][name]["directory"]) / ".env"
     if request.method == "GET":
         content = env_file.read_text() if env_file.exists() else ""
@@ -144,7 +144,7 @@ def api_env(name):
     env_file.write_text(f"DISCORD_TOKEN={token}\n")
     config["bots"][name]["token"] = token
     save_config(config)
-    return jsonify({"success": True, "message": "Token güncellendi"})
+    return jsonify({"success": True, "message": "Token updated"})
 
 
 @app.route("/api/bots/import", methods=["POST"])
@@ -155,9 +155,9 @@ def api_import_bot():
     req_file = request.files.get("req_file")
 
     if not name:
-        return jsonify({"error": "Bot adı gerekli"}), 400
+        return jsonify({"error": "Bot name required"}), 400
     if not bot_file:
-        return jsonify({"error": "Bot Python dosyası gerekli"}), 400
+        return jsonify({"error": "Bot Python file required"}), 400
 
     bot_code = bot_file.read().decode("utf-8")
     req_content = None
@@ -182,7 +182,7 @@ def api_bot_invite(name):
 def api_auto_restart(name):
     config = load_config()
     if name not in config["bots"]:
-        return jsonify({"error": "Bot bulunamadı"}), 404
+        return jsonify({"error": "Bot not found"}), 404
     data = request.get_json() or {}
     enabled = data.get("enabled", False)
     config["bots"][name]["auto_restart"] = enabled
@@ -206,7 +206,7 @@ def api_clone_bot():
     token = data.get("token", "").strip()
 
     if not name or not repo_url:
-        return jsonify({"error": "Bot adı ve repo URL'si gerekli"}), 400
+        return jsonify({"error": "Bot name and repo URL required"}), 400
 
     ok, msg = clone_bot(name, repo_url, token or None)
     if ok:
