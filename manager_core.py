@@ -73,6 +73,7 @@ def create_bot(name, token):
         "pid": None,
         "directory": str(bot_dir),
         "auto_restart": False,
+        "auto_git_pull": False,
         "source": "template"
     }
     save_config(config)
@@ -384,11 +385,13 @@ def get_bot_logs(bot_name, lines=50):
 
 
 def monitor_loop(interval=5):
+    _last_git_check = 0
     while True:
         time.sleep(interval)
         try:
             config = load_config()
             changed = False
+            now = time.time()
             for name, info in list(config["bots"].items()):
                 if info["status"] == "running" and info["pid"]:
                     alive = False
@@ -409,6 +412,15 @@ def monitor_loop(interval=5):
                             log(name, "Otomatik yeniden başlatılıyor...")
                             save_config(config)
                             start_bot(name)
+
+            if now - _last_git_check > 60:
+                _last_git_check = now
+                for name, info in list(config["bots"].items()):
+                    if info.get("auto_git_pull"):
+                        behind, _ = check_git_updates(name) or (0, "")
+                        if behind and behind > 0:
+                            log(name, f"Git güncellemesi bulundu ({behind} commit), güncelleniyor...")
+                            auto_pull_restart(name)
             if changed:
                 save_config(config)
         except Exception:
@@ -442,12 +454,115 @@ def import_bot(name, bot_code, token=None, requirements_content=None):
         "pid": None,
         "directory": str(bot_dir),
         "auto_restart": False,
+        "auto_git_pull": False,
         "source": "imported"
     }
     save_config(config)
 
     log(name, "Bot dosyadan içe aktarıldı")
     return True, "Bot başarıyla içe aktarıldı"
+
+
+def clone_bot(name, repo_url, token=None):
+    bot_dir = BOTS_DIR / name
+    if bot_dir.exists():
+        return False, f"'{name}' adında bir bot zaten var"
+
+    try:
+        subprocess.run(["git", "clone", repo_url, str(bot_dir)], check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        return False, f"Git clone hatası: {e.stderr}"
+
+    bot_file = bot_dir / "bot.py"
+    if not bot_file.exists():
+        shutil.rmtree(bot_dir)
+        return False, "Depoda bot.py bulunamadı"
+
+    if token:
+        (bot_dir / ".env").write_text(f"DISCORD_TOKEN={token}\n")
+
+    req_file = bot_dir / "requirements.txt"
+    if not req_file.exists():
+        (bot_dir / "requirements.txt").write_text("discord.py\naiohttp\npython-dotenv\n")
+
+    config = load_config()
+    config["bots"][name] = {
+        "token": token or "",
+        "created_at": datetime.now().isoformat(),
+        "status": "stopped",
+        "pid": None,
+        "directory": str(bot_dir),
+        "auto_restart": False,
+        "auto_git_pull": False,
+        "source": "cloned"
+    }
+    save_config(config)
+
+    log(name, "Bot GitHub'dan klonlandı")
+    return True, "Bot başarıyla klonlandı"
+
+
+def set_auto_git_pull(bot_name, enabled):
+    config = load_config()
+    if bot_name not in config["bots"]:
+        return False, "Bot bulunamadı"
+    config["bots"][bot_name]["auto_git_pull"] = enabled
+    save_config(config)
+    status = "açık" if enabled else "kapalı"
+    log(bot_name, f"Otomatik git güncelleme {status}")
+    return True, f"Otomatik git güncelleme {status}"
+
+
+def check_git_updates(bot_name):
+    config = load_config()
+    if bot_name not in config["bots"]:
+        return None, "Bot bulunamadı"
+
+    bot_dir = Path(config["bots"][bot_name]["directory"])
+    if not (bot_dir / ".git").exists():
+        return None, "Git deposu bulunamadı"
+
+    try:
+        subprocess.run(["git", "fetch"], cwd=str(bot_dir), capture_output=True, text=True)
+        result = subprocess.run(
+            ["git", "rev-list", "--count", "HEAD..origin/HEAD"],
+            cwd=str(bot_dir), capture_output=True, text=True
+        )
+        behind = int(result.stdout.strip() or 0)
+        if behind > 0:
+            return behind, f"{behind} yeni commit var"
+        return 0, "Güncel"
+    except Exception as e:
+        return None, str(e)
+
+
+def auto_pull_restart(bot_name):
+    config = load_config()
+    if bot_name not in config["bots"]:
+        return False, "Bot bulunamadı"
+
+    bot_dir = Path(config["bots"][bot_name]["directory"])
+    was_running = (config["bots"][bot_name]["status"] == "running")
+
+    if was_running:
+        stop_bot(bot_name)
+
+    try:
+        result = subprocess.run(["git", "pull"], cwd=str(bot_dir), capture_output=True, text=True)
+        if result.returncode != 0:
+            log(bot_name, f"Git pull hatası: {result.stderr}")
+            return False, f"Git pull hatası: {result.stderr}"
+        log(bot_name, "Otomatik git pull yapıldı")
+    except Exception as e:
+        return False, str(e)
+
+    if (bot_dir / "requirements.txt").exists():
+        install_deps(bot_name)
+
+    if was_running:
+        start_bot(bot_name)
+
+    return True, "Bot güncellendi ve yeniden başlatıldı"
 
 
 def get_bot_invite_url(bot_name):

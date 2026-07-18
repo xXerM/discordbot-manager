@@ -8,7 +8,7 @@ from manager_core import (
     create_bot, install_deps, start_bot, stop_bot, restart_bot,
     delete_bot, git_push, git_pull, list_bots, get_bot_status, get_all_bots_status,
     edit_bot_file, get_bot_logs, start_monitor, load_config, save_config, log,
-    import_bot, get_bot_invite_url
+    import_bot, get_bot_invite_url, clone_bot
 )
 
 LANG = {
@@ -27,6 +27,7 @@ LANG = {
                 "menu_install": "Install Dependencies",
         "menu_logs": "Bot Logs",
         "menu_import": "Import Bot",
+        "menu_clone": "Clone from GitHub",
         "menu_web": "Web Interface",
         "menu_invite": "Add to Server (Invite)",
         "menu_lang": "Toggle Language (TR)",
@@ -56,6 +57,7 @@ LANG = {
         "invalid_path": "Enter a valid file path!",
         "token_opt": "Discord Bot Token (optional): ",
         "req_path": "Requirements file path (optional): ",
+        "repo_url": "GitHub Repository URL: ",
         "invite_for": "Get invite link for bot: ",
         "invite_link": "Invite link: {url}",
         "web_starting": "Starting web interface...",
@@ -88,6 +90,7 @@ LANG = {
                 "menu_install": "Ba\u011f\u0131ml\u0131l\u0131klar\u0131 Kur",
         "menu_logs": "Bot Loglar\u0131",
         "menu_import": "Bot \u0130\u00e7e Aktar",
+        "menu_clone": "GitHub'dan Klonla",
         "menu_web": "Web Aray\u00fcz\u00fc",
         "menu_invite": "Sunucuya Ekle (Davet)",
         "menu_lang": "Dili De\u011fi\u015ftir (EN)",
@@ -117,6 +120,7 @@ LANG = {
         "invalid_path": "Ge\u00e7erli bir dosya yolu girin!",
         "token_opt": "Discord Bot Token (opsiyonel): ",
         "req_path": "Requirements dosyas\u0131 yolu (opsiyonel): ",
+        "repo_url": "GitHub Depo URL'si: ",
         "invite_for": "Davet linki al\u0131nacak bot: ",
         "invite_link": "Davet linki: {url}",
         "web_starting": "Web aray\u00fcz\u00fc ba\u015flat\u0131l\u0131yor...",
@@ -209,8 +213,9 @@ def cmd_interactive():
         print(f"  [5] {t('menu_delete')}        [6] {t('menu_edit')}")
         print(f"  [7] {t('menu_git_push')}    [8] {t('menu_git_pull')}")
         print(f"  [9] {t('menu_install')}      [10] {t('menu_logs')}")
-        print(f"  [11] {t('menu_import')}      [12] {t('menu_web')}")
-        print(f"  [13] {t('menu_invite')}      [14] {t('menu_lang')}")
+        print(f"  [11] {t('menu_import')}      [12] {t('menu_clone')}")
+        print(f"  [13] {t('menu_web')}         [14] {t('menu_invite')}")
+        print(f"  [15] {t('menu_lang')}")
         print(f"  [0] {t('menu_exit')}")
         choice = input(f"\n  {t('choice')}").strip()
 
@@ -240,10 +245,12 @@ def cmd_interactive():
         elif choice == "11":
             cmd_import()
         elif choice == "12":
-            start_web()
+            cmd_clone()
         elif choice == "13":
-            cmd_invite()
+            start_web()
         elif choice == "14":
+            cmd_invite()
+        elif choice == "15":
             cur = _get_cli_lang()
             new = "tr" if cur == "en" else "en"
             _set_cli_lang(new)
@@ -455,6 +462,31 @@ def cmd_import():
     _wait()
 
 
+def cmd_clone():
+    name = input(f"  {t('name')}").strip()
+    if not name:
+        print(f"  {t('name_empty')}")
+        _wait()
+        return
+    repo_url = input(f"  {t('repo_url')}").strip()
+    if not repo_url:
+        print("  Repo URL gerekli!")
+        _wait()
+        return
+    token_val = input(f"  {t('token_opt')}").strip()
+    ok, msg = clone_bot(name, repo_url, token_val or None)
+    print(f"  {'\u2705' if ok else '\u274c'} {msg}")
+    if ok:
+        print(f"  {t('installing')}")
+        ok2, msg2 = install_deps(name)
+        print(f"  {'\u2705' if ok2 else '\u274c'} {msg2}")
+        auto = input(f"  {t('auto_start')}").strip().lower()
+        if auto in ("y", "e"):
+            ok3, msg3 = start_bot(name)
+            print(f"  {'\u2705' if ok3 else '\u274c'} {msg3}")
+    _wait()
+
+
 def cmd_invite():
     bots = list_bots()
     if not bots:
@@ -544,6 +576,11 @@ def main():
         p_import.add_argument("--token", help="Discord bot token")
         p_import.add_argument("--requirements", help="Requirements file path")
 
+        p_clone = subparsers.add_parser("clone", help="Clone bot from GitHub")
+        p_clone.add_argument("name", help="Bot name")
+        p_clone.add_argument("repo_url", help="GitHub repository URL")
+        p_clone.add_argument("--token", help="Discord bot token")
+
         p_invite = subparsers.add_parser("invite", help="Get bot invite link")
         p_invite.add_argument("name", help="Bot name")
 
@@ -622,6 +659,11 @@ def main():
                     print(t("req_not_found"))
                     return
             ok, msg = import_bot(args.name, bot_code, args.token, req_content)
+            print(f"{'\u2705' if ok else '\u274c'} {msg}")
+            if ok:
+                install_deps(args.name)
+        elif args.command == "clone":
+            ok, msg = clone_bot(args.name, args.repo_url, args.token)
             print(f"{'\u2705' if ok else '\u274c'} {msg}")
             if ok:
                 install_deps(args.name)

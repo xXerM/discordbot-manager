@@ -408,6 +408,9 @@
                 <button class="btn btn-outline-accent btn-sm" onclick="showImportModal()">
                     <i class="bi bi-upload"></i> <span data-i18n="importBotBtn">Import Bot</span>
                 </button>
+                <button class="btn btn-outline-accent btn-sm" onclick="showCloneModal()">
+                    <i class="bi bi-github"></i> <span data-i18n="cloneBtn">Clone from GitHub</span>
+                </button>
                 <button class="btn btn-accent btn-sm" onclick="showCreateModal()">
                     <i class="bi bi-plus-lg"></i> <span data-i18n="newBotBtn">New Bot</span>
                 </button>
@@ -477,6 +480,39 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
                     <button class="btn btn-accent" onclick="createBot()" data-i18n="create">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="cloneModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-github me-2"></i><span data-i18n="cloneTitle">Clone from GitHub</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="botName">Bot Name</label>
+                        <input type="text" class="form-control" id="cloneBotName" placeholder="e.g. my-github-bot">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="repoUrl">GitHub Repository URL</label>
+                        <input type="text" class="form-control" id="cloneRepoUrl" placeholder="https://github.com/user/repo.git">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="botTokenOptional">Discord Bot Token (optional)</label>
+                        <input type="password" class="form-control" id="cloneBotToken" placeholder="MTE4...">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cloneAutoStart">
+                        <label class="form-check-label" style="color: var(--text-secondary);" data-i18n="autoStart">Auto start after creation</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" data-i18n="cancel">Cancel</button>
+                    <button class="btn btn-accent" onclick="cloneBot()" data-i18n="cloneBtn">Clone</button>
                 </div>
             </div>
         </div>
@@ -684,6 +720,11 @@
                 min: 'm',
                 sec: 's',
                 pid: 'PID',
+                cloneBtn: 'Clone from GitHub',
+                cloneTitle: 'Clone from GitHub',
+                repoUrl: 'GitHub Repository URL',
+                autoGitPull: 'Auto Git Pull',
+                sourceCloned: 'CLONED',
             },
             tr: {
                 newBotBtn: 'Yeni Bot',
@@ -751,6 +792,11 @@
                 min: 'd',
                 sec: 'sn',
                 pid: 'PID',
+                cloneBtn: 'GitHub\'dan Klonla',
+                cloneTitle: 'GitHub\'dan Klonla',
+                repoUrl: 'GitHub Depo URL\'si',
+                autoGitPull: 'Otomatik Git Güncelleme',
+                sourceCloned: 'KLONLANDI',
             }
         };
 
@@ -828,6 +874,7 @@
 
         function getSourceBadge(source) {
             if (source === 'imported') return `<span class="source-badge source-imported">${t('sourceImported')}</span>`;
+            if (source === 'cloned') return `<span class="source-badge source-imported">${t('sourceCloned')}</span>`;
             return `<span class="source-badge source-template">${t('sourceTemplate')}</span>`;
         }
 
@@ -938,6 +985,7 @@
                             <button class="action-btn" onclick="showEnv('${name}')"><i class="bi bi-key"></i> ${t('token')}</button>
                             <button class="action-btn" onclick="gitPush('${name}')"><i class="bi bi-arrow-up"></i> ${t('gitPush')}</button>
                             <button class="action-btn" onclick="gitPull('${name}')"><i class="bi bi-arrow-down"></i> ${t('gitPull')}</button>
+                            <button class="action-btn" id="autoGitPullBtn-${name}" onclick="toggleAutoGitPull('${name}')" style="opacity: ${b.auto_git_pull ? '1' : '0.5'}"><i class="bi bi-arrow-repeat"></i> ${t('autoGitPull')}</button>
                             <button class="action-btn text-danger" onclick="deleteBot('${name}')"><i class="bi bi-trash"></i> ${t('delete')}</button>
                         </div>
                     </div>
@@ -1187,6 +1235,57 @@
             })
                 .then(r => r.json())
                 .then(data => showToast(data.message, data.success ? 'success' : 'error'));
+        }
+
+        function showCloneModal() {
+            document.getElementById('cloneBotName').value = '';
+            document.getElementById('cloneRepoUrl').value = '';
+            document.getElementById('cloneBotToken').value = '';
+            document.getElementById('cloneAutoStart').checked = false;
+            new bootstrap.Modal(document.getElementById('cloneModal')).show();
+        }
+
+        function cloneBot() {
+            const name = document.getElementById('cloneBotName').value.trim();
+            const repoUrl = document.getElementById('cloneRepoUrl').value.trim();
+            const token = document.getElementById('cloneBotToken').value.trim();
+            const autoStart = document.getElementById('cloneAutoStart').checked;
+
+            if (!name || !repoUrl) {
+                showToast('Bot adı ve repo URL\'si gerekli', 'error');
+                return;
+            }
+
+            fetch('/api/bots/clone', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, repo_url: repoUrl, token, auto_start: autoStart })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    showToast(data.message, data.success ? 'success' : 'error');
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('cloneModal')).hide();
+                        loadBots();
+                    }
+                })
+                .catch(() => showToast(t('actionFailed'), 'error'));
+        }
+
+        function toggleAutoGitPull(name) {
+            const current = botsData[name]?.auto_git_pull || false;
+            const enabled = !current;
+            fetch(`/api/bots/${name}/auto-git-pull`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    showToast(data.message, data.success ? 'success' : 'error');
+                    if (data.success) loadBots();
+                })
+                .catch(() => showToast(t('actionFailed'), 'error'));
         }
 
         applyLang();

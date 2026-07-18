@@ -6,6 +6,7 @@ from manager_core import (
     delete_bot, git_push, git_pull, list_bots, get_bot_status, get_all_bots_status,
     edit_bot_file, get_bot_logs, start_monitor, load_config, save_config, log,
     import_bot, get_bot_invite_url, replace_bot_file,
+    clone_bot, set_auto_git_pull,
     BASE_DIR, BOTS_DIR
 )
 
@@ -187,3 +188,29 @@ def api_auto_restart(name):
     config["bots"][name]["auto_restart"] = enabled
     save_config(config)
     return jsonify({"success": True, "auto_restart": enabled})
+
+
+@app.route("/api/bots/<name>/auto-git-pull", methods=["POST"])
+def api_auto_git_pull(name):
+    data = request.get_json() or {}
+    enabled = data.get("enabled", False)
+    ok, msg = set_auto_git_pull(name, enabled)
+    return jsonify({"success": ok, "message": msg}), (200 if ok else 400)
+
+
+@app.route("/api/bots/clone", methods=["POST"])
+def api_clone_bot():
+    data = request.get_json()
+    name = data.get("name", "").strip()
+    repo_url = data.get("repo_url", "").strip()
+    token = data.get("token", "").strip()
+
+    if not name or not repo_url:
+        return jsonify({"error": "Bot adı ve repo URL'si gerekli"}), 400
+
+    ok, msg = clone_bot(name, repo_url, token or None)
+    if ok:
+        install_deps(name)
+        if data.get("auto_start"):
+            start_bot(name)
+    return jsonify({"success": ok, "message": msg}), (200 if ok else 400)

@@ -6,12 +6,14 @@ A modern CLI + Web tool for managing Python-based Discord bots.
 
 - **Bot Creation** — Creates new bots from the `templatebot.py` template
 - **Import Existing Bots** — Upload your own `.py` bot files with drag-and-drop; auto-installs dependencies
+- **Clone from GitHub** — Clone a bot directly from a GitHub repository; auto-installs dependencies
 - **Replace Bot Files** — Update any bot's source code by uploading a new file (keeps config & token)
 - **Start / Stop / Restart** — Manage bot processes with crash detection
 - **Code Editing** — Edit bot files via CLI or web interface
 - **Token Management** — Update tokens in `.env` files
 - **Dependency Management** — Auto-installs packages from `requirements.txt`
 - **Git Push & Pull** — `git init`, `commit`, `push`, and `pull` bot repositories
+- **Auto Git Pull** — Automatically detects new commits, pulls, and restarts the bot
 - **Live Monitoring** — Track RAM, CPU, storage, and uptime with auto-restart on crash
 - **Logging** — Separate log files for each bot
 - **Invite Link Generator** — Generate Discord OAuth2 invite URLs from bot tokens
@@ -86,6 +88,9 @@ python3 manager.py install mybot
 # Import an existing bot from file
 python3 manager.py import mybot /path/to/bot.py --token TOKEN --requirements /path/to/requirements.txt
 
+# Clone a bot from GitHub
+python3 manager.py clone mybot https://github.com/user/repo.git --token TOKEN
+
 # Get Discord invite link for a bot
 python3 manager.py invite mybot
 
@@ -131,6 +136,24 @@ You can also **replace** any bot's source file later via the **Replace File** bu
 python3 manager.py import mybot ./my_bot.py --token TOKEN --requirements ./requirements.txt
 ```
 
+## Cloning from GitHub
+
+You can clone a bot directly from a public GitHub repository. The manager will `git clone` the repo, check for `bot.py`, set up the `.env` and `requirements.txt`, and register the bot.
+
+### Via Web Interface
+1. Click **Clone from GitHub** in the top navbar
+2. Enter a bot name
+3. Enter the GitHub repository URL (e.g. `https://github.com/user/repo.git`)
+4. Optionally add a Discord token
+5. Click **Clone** — dependencies are auto-installed
+
+Cloned bots appear with a `CLONED` badge and support all management features.
+
+### Via CLI
+```bash
+python3 manager.py clone mybot https://github.com/user/repo.git --token TOKEN
+```
+
 ## Git Integration
 
 Each bot can have its own git repository. The manager supports:
@@ -148,12 +171,26 @@ python3 manager.py git-push mybot -m "update message"
 python3 manager.py git-pull mybot --remote origin --branch main
 ```
 
+## Auto Git Pull
+
+When enabled, the manager will automatically check for new commits on the remote repository every 60 seconds. If new commits are detected, the bot will be stopped, `git pull` will be executed, and the bot will be restarted automatically.
+
+### Via Web
+Each bot card has an **Auto Git Pull** toggle button (repeat icon). When highlighted, auto git pull is enabled for that bot.
+
+### Via API
+```bash
+curl -X POST http://localhost:5000/api/bots/mybot/auto-git-pull \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true}'
+```
+
 ## Language Support
 
 Both the web interface and CLI support English (default) and Turkish:
 
 - **Web:** Click the `TR` / `EN` button in the top navbar
-- **CLI interactive:** Option `[14] Toggle Language (TR)` / `Dili Değiştir (EN)`
+- **CLI interactive:** Option `[15] Toggle Language (TR)` / `Dili Değiştir (EN)`
 - **CLI command:** `python3 manager.py lang en` or `python3 manager.py lang tr`
 
 Language preference is saved to `bot_config.json` and persists across sessions.
