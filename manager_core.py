@@ -475,8 +475,26 @@ def clone_bot(name, repo_url, token=None):
 
     bot_file = bot_dir / "bot.py"
     if not bot_file.exists():
-        shutil.rmtree(bot_dir)
-        return False, "Depoda bot.py bulunamadı"
+        py_files = list(bot_dir.glob("*.py"))
+        if len(py_files) == 0:
+            py_files = [p for p in bot_dir.rglob("*.py") if not any(
+                part.startswith(".") or part in ("__pycache__", "venv", ".venv", "env", "node_modules", "site-packages")
+                for part in p.relative_to(bot_dir).parts[:-1]
+            )]
+        if len(py_files) == 0:
+            shutil.rmtree(bot_dir)
+            return False, "Depoda hiç .py dosyası bulunamadı"
+        if len(py_files) > 1:
+            found = ", ".join(str(f.relative_to(bot_dir)) for f in py_files[:10])
+            if len(py_files) > 10:
+                found += f" ve {len(py_files) - 10} dosya daha"
+            return False, f"Depoda birden fazla .py dosyası bulundu ({found}). Ana bot dosyası bot.py olarak adlandırılmalıdır (silme işlemi yapılmadı)."
+        src = py_files[0]
+        if src.parent == bot_dir:
+            src.rename(bot_file)
+        else:
+            shutil.copy2(str(src), str(bot_file))
+        log(name, f"{src.relative_to(bot_dir)} -> bot.py olarak kullanılıyor")
 
     if token:
         (bot_dir / ".env").write_text(f"DISCORD_TOKEN={token}\n")
